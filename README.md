@@ -1,206 +1,332 @@
-# Doodlebot – The Lost Kingdom
+<div align="center">
 
-A web game for Grade 5 that teaches **autonomous navigation**. Students build a maze, then watch Doodlebot, a 2D social robot, **sense** its surroundings, **map** an unknown world, and **plan** the shortest path to rescue Princess-Bot. Students change the sensor range, run experiments on the same maze and compare the results side by side.
+<img src="imgs/welcome.png" alt="Doodlebot – The Lost Kingdom welcome page" width="820">
 
-## Run it locally
+# 🤖 Doodlebot – The Lost Kingdom
 
-Requirements: **Node.js 18 or newer** and **Google Chrome** (or Edge) for voice input.
+**A web game that teaches Grade 5 students how a robot finds its way through a world it cannot see.**
+
+Doodlebot **senses** what is around it, **builds its own map**, and only then **plans** the shortest path to rescue Princess-Bot. 👑
+
+[![Play online](https://img.shields.io/badge/▶_Play_online-onrender.com-6C8EEF?style=for-the-badge)](https://doodlebot-navigator.onrender.com/#welcome)
+&nbsp;
+![Node 18+](https://img.shields.io/badge/Node-18%2B-8CC9A7?style=for-the-badge)
+&nbsp;
+![No dependencies](https://img.shields.io/badge/dependencies-0-F4B6C2?style=for-the-badge)
+&nbsp;
+![Tests](https://img.shields.io/badge/tests-11_passing-FFD58A?style=for-the-badge)
+
+</div>
+
+---
+
+## 🔗 Quick links
+
+| 🎮 Game | 📚 Lesson (Grade 5, 30 min) | 📝 Write-ups |
+|---|---|---|
+| [**Play online**](https://doodlebot-navigator.onrender.com/#welcome) | [Lesson plan (PDF)](curriculum/Doodlebot_Lesson_Plan.pdf) | [Design reflection (1 page)](docs/Doodlebot_Design_Reflection.pdf) |
+| [Run it locally](#-run-it-locally) | [Lesson slides (PPTX)](curriculum/Doodlebot_Lesson_Slides.pptx) | [Design report (how I built it)](docs/Doodlebot_Design_Report.pdf) |
+| [Doodlebot's chat prompt](prompts/doodlebot.md) | [Student worksheet (PDF)](curriculum/Doodlebot_Student_Worksheet.pdf) | [Character design](CHARACTER_DESIGN.md) |
+
+> ⏳ The online version runs on a free server that sleeps when nobody is playing, so the **first visit can take about 50 seconds** to load. Online, Doodlebot's chat runs in offline mode (no API key), and 🎤 voice works in **Chrome or Edge**.
+
+---
+
+## 🎬 The game in four pictures
+
+| 1️⃣ Build the maze | 2️⃣ Doodlebot explores |
+|:---:|:---:|
+| <img src="imgs/build.png" alt="Building a maze" width="400"> | <img src="imgs/explore.png" alt="Doodlebot exploring its own map" width="400"> |
+| Draw walls and obstacles, place Doodlebot and Princess-Bot, or load a ready-made maze. | Black squares are unknown. The circle is the sensor; the orange ring is the nearest unexplored area. |
+| **3️⃣ Doodlebot plans** | **4️⃣ Compare the results** |
+| <img src="imgs/planning.png" alt="Planner search and shortest path" width="400"> | <img src="imgs/experiments.png" alt="My Experiments comparing two runs" width="400"> |
+| Yellow squares show the search; the green line is the shortest path on **Doodlebot's own map**. | Change the sensor range, run the same maze again and see what changed. |
+
+---
+
+## 🚀 Run it locally
+
+You need **Node.js 18 or newer** and **Google Chrome** (or Edge) for voice input. There are no packages to install.
 
 ```bash
-cd doodlebot-navigator
 npm start
 ```
 
-Open **http://localhost:3000** in Chrome. There are no packages to install: the server uses only Node's built-in modules.
+Then open **http://localhost:3000** in Chrome.
 
-### Doodlebot's chat and voice (optional API key)
+<details>
+<summary><b>🔑 Optional: connect a language model for Doodlebot's chat</b></summary>
 
-The game and the chat work without any key: Doodlebot answers from an offline script about sensing, maps and paths. For free-form answers from a language model:
+<br>
+
+The chat works **without any key**: Doodlebot answers from an offline script about sensing, maps and paths. For free-form answers:
 
 1. Copy `.env.example` to `.env`.
-2. Fill in **one** key: `ANTHROPIC_API_KEY` or `OPENAI_API_KEY` (any OpenAI-compatible endpoint works via `OPENAI_BASE_URL`).
-3. Restart `npm start`. The terminal prints the chat mode and the voice in use.
+2. Fill in **one** key: `ANTHROPIC_API_KEY` or `OPENAI_API_KEY` (any OpenAI-compatible endpoint works through `OPENAI_BASE_URL`).
+3. Restart `npm start`. The terminal prints which chat mode is active.
 
-The key is only read by the local server. It never reaches the browser, and `.env` is git-ignored. Never share or submit your `.env` file.
+🔒 The key is only read by the local server. It never reaches the browser, and `.env` is git-ignored.
 
-**Doodlebot's voice:** with an OpenAI key, replies are spoken by OpenAI's `gpt-4o-mini-tts` model (voice `coral`, with instructions to sound like a cheerful, gentle robot friend for a 10-year-old). If the key can't use the speech model, or the network fails, Doodlebot switches automatically to the browser's own voice (the most natural English voice installed, rate 0.95, pitch 1.08) for the rest of the session. Change the voice with `OPENAI_TTS_VOICE` (`coral`, `nova`, `shimmer` or `sage`), or always use the browser voice with `DOODLEBOT_VOICE=browser`. Either way, Doodlebot speaks exactly the words shown in the chat, and its mouth moves only while it is speaking.
+**Voice:** with an OpenAI key, Doodlebot speaks with a natural OpenAI voice (`OPENAI_TTS_VOICE`, default `coral`). Without one, it uses the browser's voice automatically.
 
-**Voice input:** click 🎤 and allow microphone access. Speech is transcribed live and shown in the chat. Common mishearings ("do boys" → Doodlebot, "mouth" → maze) are corrected before the question is sent. Speech recognition uses the browser's Web Speech API, which works in Chrome and Edge (not Firefox). Each reply is tagged **AI** or **OFFLINE** so you can see which one answered.
+</details>
 
-### Tests
+<details>
+<summary><b>🧪 Run the tests</b></summary>
+
+<br>
 
 ```bash
 npm test
 ```
 
 11 automated tests check the parts that are easy to get subtly wrong:
-- the frontier is chosen by path distance, not straight-line distance;
-- exploration stops only when no reachable unknown cell is left;
-- A\* and BFS both return a true shortest path on 60 random mazes;
-- A\* never searches more cells than BFS;
-- the odd mazes (enclosed start, walled-in Princess-Bot, empty grid, Princess-Bot next to the start);
-- the editor rules;
-- random mazes are always solvable.
 
-## How to play
+- the nearest frontier is chosen by **path distance**, not straight-line distance
+- exploration stops only when **no reachable unknown cell** is left
+- BFS and A\* both return a **true shortest path** on 60 random mazes, and A\* never searches more cells than BFS
+- the odd mazes: enclosed start, walled-in Princess-Bot, empty grid, Princess-Bot next to the start
+- the editor rules, and random mazes are always solvable
 
-**Welcome → How Doodlebot Thinks → Game.**
+</details>
 
-- **Welcome page:** castle artwork, Doodlebot and Princess-Bot, and a **Start Adventure!** button.
-- **Tutorial:** first-time players see a four-step animated tutorial: *Look Around*, *Explore the Unknown*, *Think and Plan*, and *Rescue or Try Again*, which includes a "What if the path is blocked?" example. Students move through it at their own pace with Next, Back, Replay animation and Skip for now. Each step's explanations stack up so slower readers never lose one.
-- **The tutorial shows only real behaviour.** Every animation replays frames recorded from the real game code (`runMission`, real sensing, real nearest-frontier exploration, real BFS) on small practice mazes. It never shows anything the game wouldn't do, and it never touches the student's own maze or results.
-- **Returning players** are remembered in the browser and go straight to the game, with the tutorial one click away.
-- **🏠 Home** returns to the welcome page without resetting anything. A running mission pauses, and **Continue Adventure!** brings the student back exactly where they were. The browser's back and forward buttons also work.
+---
 
-The game itself guides students through three stages, shown at the top of the page:
+## 🕹️ How to play
 
-1. **Build.** The real-world map fills the centre. Open **Build Tools**, pick a tool (wall, obstacle, Doodlebot, Princess-Bot, eraser) and click a cell. Hold and drag to draw walls and obstacles. Placing Doodlebot or Princess-Bot again moves it. Or pick one of the **Ready-made mazes**, or press 🎲 **Random maze** for a maze that always has a way through.
-2. **Explore.** Press **Start Exploring**. The centre switches to *Doodlebot's map* (black = not sensed yet). Two live numbers show *steps to finish mapping* and *cells discovered*. **One step** moves one step at a time, and the main button pauses and continues.
-3. **Results.** A results card shows the outcome, the sensor range, steps to finish mapping, the shortest path length, the cells searched for the path, and the step at which Princess-Bot was sensed. It also compares this run with the previous run on the same maze. **Try a different sensor range** opens Mission Settings for the next experiment.
+<img src="imgs/tutorial.png" alt="How Doodlebot Thinks tutorial" width="420" align="right">
 
-**Mission Settings** holds:
-- the sensor range, 1–5, with a small picture of the sensing circle;
-- the speed: slow, normal or fast;
-- under *Try another path-finding algorithm*, BFS (the default) or A\*.
+**Welcome → How Doodlebot Thinks → Game**
 
-**My Experiments** keeps every finished run as a card, asks *What changed?* once there are two runs, and has a full table of every number for the facilitator. The menus open and close independently.
+The game opens on a storybook welcome page. First-time players then see a four-step animated tutorial: **Look Around**, **Explore the Unknown**, **Think and Plan**, **Rescue or Try Again**. Every animation replays frames recorded from the real game code, so it never shows anything the game does not do. Students can skip it, and 🏠 **Home** pauses the game without losing progress.
 
-The toggle above the maze switches between the real world, Doodlebot's map, or **both side by side**, at any time. The **Maze ID** next to it shows when two runs used the same maze. **What do the colours mean?** under the maze explains the overlays, and the **?** button opens a short how-to-play guide.
+The game itself has three stages, shown at the top of the page:
 
-Click the floating Doodlebot (or Doodlebot on its own map) to chat. Suggested questions help students who don't know what to ask, and 🔊 turns Doodlebot's voice on or off for quiet classrooms.
+1. 🧱 **Build.** Open **Build Tools**, pick a tool (wall, obstacle, Doodlebot, Princess-Bot, eraser) and click or drag on the grid. Or load a ready-made maze, or press 🎲 for a random maze that always has a way through.
+2. 🔍 **Explore.** Press **Start Exploring**. The centre switches to *Doodlebot's map*. Two live numbers show *steps to finish mapping* and *cells discovered*. **One step** moves one step at a time.
+3. 🏆 **Results.** A results card shows the outcome, the sensor range, steps to finish mapping, the shortest path length and the cells searched, compared with the previous run on the same maze.
 
-## How Doodlebot navigates
+<br clear="right">
+
+<details>
+<summary><b>⚙️ Settings, experiments and other controls</b></summary>
+
+<br>
+
+- **Mission Settings** (closed by default): sensor range 1–5 with a picture of the sensing circle, speed (slow, normal, fast) and, under *Try another path-finding algorithm*, BFS (default) or A\*.
+- **My Experiments** keeps every finished run as a card, asks *What changed?* once there are two runs, and has a full table of every number for the facilitator.
+- The **map toggle** switches between the real world, Doodlebot's map, or both side by side.
+- **What do the colours mean?** under the maze explains the overlays, and the **?** button opens a short how-to-play guide.
+
+</details>
+
+### 💬 Talk to Doodlebot
+
+<img src="imgs/chat.png" alt="Voice chat with Doodlebot" width="380" align="right">
+
+Click Doodlebot to open the chat. Students can **type** or press 🎤 and **speak**. Their speech is written into the chat as they talk, and Doodlebot's answer is shown and **read aloud** while its mouth moves.
+
+Doodlebot's personality and rules live in [`prompts/doodlebot.md`](prompts/doodlebot.md), which is read on every message. The live game state (sensor range, current run, previous results) is sent with each question, so Doodlebot can talk about **this** maze with real numbers. Suggested questions help students who don't know what to ask, and 🔊 turns the voice off for quiet classrooms.
+
+<br clear="right">
+
+---
+
+## 😊 Meet the characters
+
+<div align="center">
+
+| <img src="design/doodlebot-idle.png" width="105"> | <img src="design/doodlebot-curious.png" width="105"> | <img src="design/doodlebot-excited.png" width="105"> | <img src="design/doodlebot-thinking.png" width="105"> | <img src="design/doodlebot-happy.png" width="105"> | <img src="design/doodlebot-sad.png" width="105"> | <img src="design/princess-lost.png" width="85"> |
+|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| **Idle** | **Curious** | **Excited** | **Thinking** | **Happy** | **Sad** | **Princess-Bot** |
+| Building the maze | Exploring | Princess-Bot sensed | Planning the path | Path found | No path | Waiting to be rescued |
+
+</div>
+
+Every emotion is tied to a real game event and shown three ways (face, chest screen and antenna colour), so children never rely on colour alone. An emotion controller keeps each face on screen for at least 1.2 s and gives important emotions priority, so a fast run never flickers. When Doodlebot reaches Princess-Bot, it celebrates with an **excited** dance and she switches to her rescued face.
+
+Doodlebot is the hero of the story, in blue, setting out to rescue the princess in pink. Princess-Bot also has a **different shape** (a tall, floating, crowned egg), so children can tell the two apart at a glance, even on a small maze cell. More in [CHARACTER_DESIGN.md](CHARACTER_DESIGN.md).
+
+---
+
+## 🧭 How Doodlebot navigates
 
 | Stage | What happens |
 |---|---|
-| Start | Doodlebot knows only the grid size and its start cell, then senses once. |
-| Sensing | Every step, every cell whose centre is within *range + 0.5* cells is copied from the real world onto Doodlebot's map (range 1 = the 3×3 square around it). The dashed circle shows the range, and newly sensed cells flash. The sensor sees through walls, because the brief says it senses *every* cell within range. |
-| Exploring | BFS from Doodlebot over cells it **knows** are free. The first *frontier* cell it reaches (a known free cell next to an unknown cell) is the nearest unexplored area **by path distance on its own map**. Doodlebot moves one step toward it, senses, and replans. The orange ring marks the target. |
-| Stopping | Exploration ends when BFS finds no reachable frontier, meaning no reachable unknown cell is left. Cells sealed off by walls stay black. |
-| Finding Princess-Bot | She is found the moment her cell enters the sensor range. Doodlebot still finishes the whole map first, because an unsensed cell could be a gap in the walls. |
-| Returning | Doodlebot drives back to its start along a shortest path on its finished map. |
-| Planning | BFS (default) or A\* (Manhattan heuristic), on Doodlebot's map only: never on the real map, never through unknown cells. The yellow cells replay the planner's real expansion order, then the green line shows the path. |
-| Rescue | Doodlebot follows the path to Princess-Bot. If there is no path, or she was never sensed, Doodlebot says so and is sad. |
+| 🟢 **Start** | Doodlebot knows only the grid size and its start cell, then senses once. |
+| 📡 **Sensing** | Every step, every cell whose centre is within *range + 0.5* cells is copied from the real world onto Doodlebot's map (range 1 = the 3×3 square around it). The brief says it senses *every* cell within range, so the sensor sees through walls. |
+| 🔍 **Exploring** | BFS from Doodlebot over cells it **knows** are free. The first *frontier* cell it reaches (a known free cell next to an unknown cell) is the nearest unexplored area **by path distance on its own map**. Doodlebot moves one step toward it, senses, and repeats. |
+| 🛑 **Stopping** | Exploration ends when no reachable unknown cell is left. Cells sealed off by walls stay black. |
+| ✨ **Finding Princess-Bot** | She is found the moment her cell enters the sensor range. Doodlebot still finishes the whole map first, because an unexplored square could hide a shorter way. |
+| 🏠 **Returning** | Doodlebot drives back to its start along a shortest path on its finished map. |
+| 🧠 **Planning** | BFS (default) or A\* (Manhattan heuristic) on Doodlebot's map only, **never** on the real map or through unknown cells. The yellow squares replay the planner's real search order. |
+| 👑 **Rescue** | Doodlebot follows the path to Princess-Bot. If there is no path, or she was never sensed, Doodlebot says so and is sad. |
 
-Movement is 4-directional and every step costs 1, so the Manhattan heuristic never overestimates and A\* returns a shortest path. Ties are broken in a fixed order (up, right, down, left), so the same maze and settings always give the same run. That is what makes the experiments repeatable.
+Ties are always broken in the same order (up, right, down, left), so **the same maze and settings always give the same run**. This is what makes the classroom experiment fair and repeatable.
 
-### Metrics
+<details>
+<summary><b>📊 Metrics and the lesson experiment</b></summary>
 
-| Metric | Where | Meaning |
-|---|---|---|
-| Steps to finish mapping | Live and results | Moves until no reachable unknown cell was left |
-| Cells discovered | Live | Cells on Doodlebot's map, out of 144 |
-| Shortest path length | Results | Moves on the planned rescue path (or "no path") |
-| Cells searched for the path | Results | Cells the planner took off its queue before reaching her |
-| Sensed Princess-Bot at step | Results | Exploration step when she entered the sensor range |
+<br>
 
-**Reference experiment (Lesson maze, Maze ID 1X6Y, BFS):**
+| Metric | Meaning |
+|---|---|
+| Steps to finish mapping | Moves until no reachable unknown cell was left |
+| Princess-Bot sensed at step | Exploration step when she entered the sensor range |
+| Map known | Share of the grid on Doodlebot's map |
+| Shortest path length | Moves on the planned path (or "no path") |
+| Cells searched by planner | Cells the planner checked before reaching her |
+
+<img src="imgs/results.png" alt="Results card" width="420" align="right">
+
+**On the Lesson maze (Maze ID `1X6Y`):**
 
 | | Sensor 1 | Sensor 4 |
-|---|---|---|
-| Steps to finish mapping | 78 | 29 |
-| Shortest path length | 21 | 21 |
-| Cells searched (BFS) | 74 | 74 |
-| Sensed Princess-Bot at step | 24 | 15 |
+|---|:---:|:---:|
+| Steps to finish mapping | **78** | **29** |
+| Princess-Bot sensed at step | 24 | 15 |
+| Shortest path | **21** | **21** |
 
-A bigger sensor maps this maze in 49 fewer steps, but the shortest path is 21 both times, because the finished map is the same. With A\* the planner searches 28 cells instead of 74 for the same 21-step path.
+A bigger sensor maps the maze much faster, but the shortest path stays the same, because the finished map is the same. For the same 21-step path, A\* searches **28** cells and BFS **74**.
 
-### Odd mazes
+<br clear="right">
 
-| Case | Behaviour |
+</details>
+
+<details>
+<summary><b>🧩 Odd mazes</b></summary>
+
+<br>
+
+<img src="imgs/no-path.png" alt="No path: Doodlebot is sad" width="340" align="right">
+
+| Case | What happens |
 |---|---|
-| No Doodlebot or no Princess-Bot | Run is blocked with a friendly message |
-| Doodlebot boxed in | Exploration ends almost immediately; "never sensed" |
-| Princess walled in | Sensed through the wall (range ≥ 2); the planner proves there is no path; Doodlebot is sad |
-| Empty field | Explores everything and rescues her |
-| Princess-Bot next to Doodlebot | Sensed at step 0, path length 1 |
+| No start or no Princess-Bot | The run is blocked with a friendly message |
+| Enclosed start | Exploration ends almost immediately; "never sensed" |
+| Princess-Bot walled in | Sensed through the wall (range ≥ 2), the planner proves there is no path, Doodlebot is sad |
+| Empty grid | Explores everything and rescues her |
+| Princess-Bot next to the start | Sensed at step 0, path length 1 |
 
-*Doodlebot boxed in*, *Princess walled in* and *Empty field* are in **Build Tools → Ready-made mazes**, next to the *Lesson maze*.
+All of them are in the **Load a maze** menu.
 
-## Optional items attempted
+<br clear="right">
 
-- [x] **Random solvable maze** (checked with BFS on the real map before it is shown)
-- [x] **Animated planner search** (replays the planner's actual expansion order)
-- [x] **Second path-planning algorithm** (BFS and A\*, selectable, compared by cells searched)
-- [x] **Results panel** keeping previous runs side by side, with a Maze ID for fair comparisons
-- [x] **All expressive states animated** (six states: idle, curious, thinking, excited, happy, sad, plus a talking mouth synced to speech)
-- [x] **Story and tutorial:** a welcome page and an animated four-step "How Doodlebot Thinks" introduction
-- [x] **Engagement elements:** Doodlebot narrates in a speech bubble, Princess-Bot has lost and rescued moods, a rescue celebration, a pencil-doodle exploring trail (Doodlebot is a drawing robot), and a natural speaking voice
-- [x] **Doodlebot design files** (`public/characters/`, `design/`, see `CHARACTER_DESIGN.md`)
-- [x] **Student worksheet** (curriculum materials)
+</details>
+
+---
+
+## 📚 The Grade 5 lesson
+
+<img src="imgs/slides.png" alt="Lesson slides" width="400" align="right">
+
+A 30-minute lesson built around **one fair experiment**: the same maze with sensor range 1, then 4.
+
+| ⏱️ Segment | What happens |
+|---|---|
+| Warm-up (6 min) | *Mystery Map*: the class acts as Doodlebot's brain and can only see nearby squares |
+| Concept and gameplay (18 min) | The tutorial, a prediction, then the experiment in pairs |
+| Wrap-up and reflection (6 min) | Reflection questions and a voice question to Doodlebot |
+
+<br clear="right">
+
+<img src="imgs/worksheet.png" alt="Student worksheet" width="260" align="left">
+
+Most children expect a bigger sensor to give a shorter path. The results show **78 vs 29 steps to finish mapping, while the path stays 21**. Predicting first and then explaining the real numbers is the evidence of learning, recorded on the worksheet and judged with a simple rubric.
+
+📄 [Lesson plan](curriculum/Doodlebot_Lesson_Plan.pdf) · 🖼️ [Slides](curriculum/Doodlebot_Lesson_Slides.pptx) · ✏️ [Worksheet](curriculum/Doodlebot_Student_Worksheet.pdf)
+
+<br clear="left">
+
+---
+
+## ✅ Optional items attempted
+
+- [x] 🌐 **Deployed URL:** [doodlebot-navigator.onrender.com](https://doodlebot-navigator.onrender.com/#welcome) (offline chat mode; the first load may take ~50 s)
+- [x] 🎲 **Random solvable maze**, checked with BFS on the real map before it is shown
+- [x] 🟨 **Animated planner search**, replaying the planner's real search order
+- [x] 🧠 **Second path-planning algorithm**: A\* and BFS, compared by cells searched
+- [x] 📋 **Results panel** keeping previous runs side by side, with a Maze ID for fair comparisons
+- [x] 😊 **All emotions animated**: idle, curious, thinking, excited, happy, sad, plus a talking mouth synced to speech
+- [x] 📖 **Story and tutorial**: a welcome page and an animated four-step "How Doodlebot Thinks"
+- [x] 🎉 **Engagement**: narration bubble, Princess-Bot's lost and rescued moods, a rescue celebration, a pencil-doodle trail
+- [x] 🎨 **Design files**: [`design/`](design) and [`public/characters/`](public/characters)
+- [x] ✏️ **Student worksheet**
 - [ ] Tele-operated mode
 - [ ] Movable obstacles, terrains, limited battery
-- [ ] Deployed URL
+- [ ] Teacher guide
 
-## Doodlebot as a character
+---
 
-Every emotion is tied to a real game event and is shown three ways (face, chest screen icon and antenna colour), plus a line in the speech bubble.
+<details>
+<summary><b>🗂️ Project structure</b></summary>
 
-| Event | Emotion |
-|---|---|
-| Building the maze | Idle |
-| Exploring toward the nearest unknown area | Curious, eyes looking where it drives |
-| Princess-Bot enters the sensor range | Excited |
-| Map complete, planning | Thinking |
-| Shortest path found | Happy |
-| Princess-Bot reached | Excited celebration; Princess-Bot rescued |
-| No path / never sensed | Sad; asks the student to open a path |
-
-An emotion controller keeps each face on screen for at least 1.2 s and gives important emotions priority, so a fast run never flickers and a routine "curious" can never hide "excited" or "sad".
-
-Princess-Bot has a different silhouette (a tall hovering egg with a crown) as well as different colours, so the two are distinct even in black and white.
-
-The chat personality, answer rules and example answers live in **`prompts/doodlebot.md`**. The server reads that file on every message, so edits apply without a restart. The live game state (sensor range, current run, previous results) is sent with each message, so Doodlebot can answer about *this* maze with real numbers.
-
-**Image credit:** Doodlebot's look is based on the "Cute robot rocking out" vector illustration from Magnific (Freepik), used as a style reference: https://www.magnific.com/premium-vector/cute-robot-rocking-out-cartoon-character-with-gesturing-hand_422239699.htm. ChatGPT was used to generate emotion variations; the in-game character is redrawn in SVG.
-
-## Project structure
+<br>
 
 ```
-server.js                  local server: static files, /api/chat and /api/tts (keeps the key server-side)
-.env.example               settings template: copy to .env and add your own key
-prompts/doodlebot.md       Doodlebot's personality, answer rules, game facts and example answers
-public/index.html          welcome page, tutorial and game
+server.js                  local server: static files + /api/chat + /api/tts (keeps the key server-side)
+prompts/doodlebot.md       Doodlebot's personality, answer rules and game facts
+public/index.html          the game page
 public/css/style.css       calm pastel theme, large targets, responsive, reduced-motion aware
-public/assets/             welcome-page artwork
-public/js/app.js           screen router: welcome, tutorial, game; Home without losing progress
-public/js/tutorial.js      animated "How Doodlebot Thinks" tutorial (replays real simulation frames)
-public/js/main.js          game controller, stages, emotions, metrics, experiments
-public/js/algorithms.js    sensing, frontier search, BFS, A* (pure, tested)
+public/js/algorithms.js    sensing, frontier search, A*, BFS (pure, tested)
 public/js/simulation.js    the mission as a step-by-step generator
 public/js/world.js         editor rules, random solvable mazes, ready-made mazes, Maze ID
 public/js/render.js        canvas drawing of both maps
-public/js/chat.js          chat UI, speech recognition, natural voice with browser fallback
+public/js/app.js           screens: welcome, tutorial, game; Home without losing progress
+public/js/tutorial.js      animated "How Doodlebot Thinks" tutorial (replays real simulation frames)
+public/js/main.js          game controller, emotions, metrics, results
+public/js/chat.js          chat window, speech recognition, text-to-speech
 public/js/offline-brain.js scripted answers when no API key is set
-public/characters/         Doodlebot and Princess-Bot (SVG + CSS states, grid tokens, emotion controller)
-design/                    character sheet, transparent PNG of every state, character preview page
-CHARACTER_DESIGN.md        character design decisions and the event-to-emotion map
+public/characters/         Doodlebot and Princess-Bot (SVG + CSS states, emotion controller)
+public/assets/             welcome-page artwork
 test/navigation.test.js    11 automated tests
+design/                    character sheet and emotion images
+curriculum/                lesson plan, slides, worksheet
+docs/                      design reflection and design report
+imgs/                      screenshots for this README
 ```
 
-## Curriculum materials
+</details>
 
-A 30-minute Grade 5 lesson built around one fair-test experiment: the Lesson maze (Maze ID 1X6Y) run with sensor range 1, then 4.
+<details>
+<summary><b>♿ Interface and accessibility</b></summary>
 
-| File | What it is |
-|---|---|
-| `Doodlebot_Lesson_Plan` (.pdf / .docx) | 2-page facilitator lesson plan: objectives, timing, what to say and do, experiment, metrics, reflection questions, answer key, rubric, troubleshooting |
-| `Doodlebot_Lesson_Slides.pptx` | 16 slides with speaker notes: warm-up (Mystery Map), concept and gameplay, wrap-up and reflection |
-| `Doodlebot_Student_Worksheet` (.pdf / .docx) | 1-page printable worksheet: Predict, Test, Reflect |
+<br>
 
-## Interface and accessibility
+- One large map at a time, matched to the stage; menus stay closed until needed; one main button per stage.
+- Pastel palette with dark navy text for contrast; unknown cells on Doodlebot's map stay black.
+- Every button and option is at least 48 px tall; body text 17 px.
+- Keyboard friendly: real buttons, arrow keys in option groups, visible focus rings, Escape closes the chat.
+- Animations switch off under the system "reduce motion" setting.
+- Works on desktop, tablet and phone widths.
 
-- One large map at a time, matched to the stage. Secondary menus stay collapsed until needed, and there is one primary action button.
-- Soft cream background with white cards and pastel accents, and dark navy text for contrast. Unknown cells on Doodlebot's map stay black.
-- Every button, tab and option is at least 48px tall (chips 40px). Body text is 17px and helper text 16px.
-- Keyboard: every control is a real button, option groups also move with the arrow keys, focus rings are visible, there is a *Skip to the maze* link, and Escape closes the chat.
-- Animations (characters, confetti, microphone pulse) switch off under the system "reduce motion" setting.
-- The layout adapts to desktop, tablet and phone widths.
+</details>
 
-## Known limitations
+<details>
+<summary><b>⚠️ Known limitations</b></summary>
 
-- Voice input needs Chrome or Edge and an internet connection (the browser sends audio to its speech service).
-- The natural voice adds a short pause (about a second) before Doodlebot speaks, and each spoken reply is a small paid API call.
-- "Go to the nearest unknown area" is a greedy rule, so a larger sensor range *usually*, but not *always*, means fewer mapping steps. On the Lesson maze, range 3 takes 54 steps, slightly more than range 2's 49. This is real behaviour of frontier exploration, not a bug.
-- The fonts (Fredoka, Nunito) load from Google Fonts. Offline, the page falls back to a system font.
-- On a small landscape tablet, the Start Exploring button sits just below the maze, so students scroll once to reach it.
+<br>
+
+- **Exploration is greedy.** Each step, BFS finds the nearest unexplored area on Doodlebot's own map, and Doodlebot goes there, without planning the whole tour in advance. This is simple and fast, but not always the shortest possible tour, so a larger sensor range *usually* but not *always* means fewer mapping steps: on the Lesson maze, range 3 takes 54 steps, slightly more than range 2's 49. The rescue path itself is always a true shortest path (BFS or A\*).
+- Voice input needs Chrome or Edge and an internet connection.
+- The fonts load from Google Fonts; offline, the page falls back to a system font.
+- On a small landscape tablet, students scroll once to reach the Start Exploring button.
+
+</details>
+
+---
+
+## 🌱 Next steps
+
+With more time, I would test the game with more children, and add a tele-operated mode so they can drive Doodlebot themselves and compare their steps with the robot's.
+
+## 🙏 Credits
+
+- Character style reference: the "Cute robot rocking out" vector illustration on [Magnific (Freepik)](https://www.magnific.com/premium-vector/cute-robot-rocking-out-cartoon-character-with-gesturing-hand_422239699.htm). ChatGPT generated the emotion variations, and the final characters were redrawn as layered SVGs.
+- Built with the help of Claude as a coding partner. How I used AI tools and checked their work is described in the [design reflection](docs/Doodlebot_Design_Reflection.pdf).
+
+<div align="center">
+
+**Made with 💙 for curious Grade 5 explorers, by Tala Alothaim**
+
+</div>
