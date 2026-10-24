@@ -36,10 +36,10 @@ Doodlebot **senses** what is around it, **builds its own map**, and only then **
 
 | 1️⃣ Build the maze | 2️⃣ Doodlebot explores |
 |:---:|:---:|
-| <img src="imgs/build.png" alt="Building a maze" width="400"> | <img src="imgs/explore.png" alt="Doodlebot exploring its own map" width="400"> |
+| <img src="imgs/build.png" alt="Building a maze" height="260"> | <img src="imgs/explore.png" alt="Doodlebot exploring its own map" height="260"> |
 | Draw walls and obstacles, place Doodlebot and Princess-Bot, or load a ready-made maze. | Black squares are unknown. The circle is the sensor; the orange ring is the nearest unexplored area. |
 | **3️⃣ Doodlebot plans** | **4️⃣ Compare the results** |
-| <img src="imgs/planning.png" alt="Planner search and shortest path" width="400"> | <img src="imgs/experiments.png" alt="My Experiments comparing two runs" width="400"> |
+| <img src="imgs/planning.png" alt="Planner search and shortest path" height="260"> | <img src="imgs/experiments.png" alt="My Experiments comparing two runs" height="260"> |
 | Yellow squares show the search; the green line is the shortest path on **Doodlebot's own map**. | Change the sensor range, run the same maze again and see what changed. |
 
 ---
@@ -226,7 +226,7 @@ A 30-minute lesson built around **one fair experiment**: the same maze with sens
 |---|---|
 | Warm-up (6 min) | *Mystery Map*: the class acts as Doodlebot's brain and can only see nearby squares |
 | Concept and gameplay (18 min) | The tutorial, a prediction, then the experiment in pairs |
-| Wrap-up and reflection (6 min) | Reflection questions and a voice question to Doodlebot |
+| Reflection (6 min) | Reflection questions and a voice question to Doodlebot |
 
 <br clear="right">
 
@@ -242,19 +242,19 @@ Most children expect a bigger sensor to give a shorter path. The results show **
 
 ## ✅ Optional items attempted
 
-- [x] 🌐 **Deployed URL:** [doodlebot-navigator.onrender.com](https://doodlebot-navigator.onrender.com/#welcome) (offline chat mode; the first load may take ~50 s)
-- [x] 🎲 **Random solvable maze**, checked with BFS on the real map before it is shown
-- [x] 🟨 **Animated planner search**, replaying the planner's real search order
-- [x] 🧠 **Second path-planning algorithm**: A\* and BFS, compared by cells searched
-- [x] 📋 **Results panel** keeping previous runs side by side, with a Maze ID for fair comparisons
-- [x] 😊 **All emotions animated**: idle, curious, thinking, excited, happy, sad, plus a talking mouth synced to speech
-- [x] 📖 **Story and tutorial**: a welcome page and an animated four-step "How Doodlebot Thinks"
-- [x] 🎉 **Engagement**: narration bubble, Princess-Bot's lost and rescued moods, a rescue celebration, a pencil-doodle trail
-- [x] 🎨 **Design files**: [`design/`](design) and [`public/characters/`](public/characters)
-- [x] ✏️ **Student worksheet**
-- [ ] Tele-operated mode
-- [ ] Movable obstacles, terrains, limited battery
-- [ ] Teacher guide
+- ☑️  **Deployed URL:** [doodlebot-navigator.onrender.com](https://doodlebot-navigator.onrender.com/#welcome) (offline chat mode; the first load may take ~50 s)
+- ☑️  **Random solvable maze**, checked with BFS on the real map before it is shown
+- ☑️  **Animated planner search**, replaying the planner's real search order
+- ☑️  **Second path-planning algorithm**: A\* and BFS, compared by cells searched
+- ☑️  **Results panel** keeping previous runs side by side, with a Maze ID for fair comparisons
+- ☑️  **All emotions animated**: idle, curious, thinking, excited, happy, sad, plus a talking mouth synced to speech
+- ☑️  **Story and tutorial**: a welcome page and an animated four-step "How Doodlebot Thinks"
+- ☑️  **Engagement**: narration bubble, Princess-Bot's lost and rescued moods, a rescue celebration, a pencil-doodle trail
+- ☑️  **Design files**: [`design/`](design) and [`public/characters/`](public/characters)
+- ☑️  **Student worksheet**
+- 🔜 Tele-operated mode
+- 🔜 Movable obstacles, terrains, limited battery
+- 🔜 Teacher guide
 
 ---
 
@@ -264,29 +264,44 @@ Most children expect a bigger sensor to give a shorter path. The results show **
 <br>
 
 ```
-server.js                  local server: static files + /api/chat + /api/tts (keeps the key server-side)
-prompts/doodlebot.md       Doodlebot's personality, answer rules and game facts
-public/index.html          the game page
-public/css/style.css       calm pastel theme, large targets, responsive, reduced-motion aware
-public/js/algorithms.js    sensing, frontier search, A*, BFS (pure, tested)
-public/js/simulation.js    the mission as a step-by-step generator
-public/js/world.js         editor rules, random solvable mazes, ready-made mazes, Maze ID
-public/js/render.js        canvas drawing of both maps
-public/js/app.js           screens: welcome, tutorial, game; Home without losing progress
-public/js/tutorial.js      animated "How Doodlebot Thinks" tutorial (replays real simulation frames)
-public/js/main.js          game controller, emotions, metrics, results
-public/js/chat.js          chat window, speech recognition, text-to-speech
-public/js/offline-brain.js scripted answers when no API key is set
-public/characters/         Doodlebot and Princess-Bot (SVG + CSS states, emotion controller)
-public/assets/             welcome-page artwork
-test/navigation.test.js    11 automated tests
-design/                    character sheet and emotion images
-curriculum/                lesson plan, slides, worksheet
-docs/                      design reflection and design report
-imgs/                      screenshots for this README
+doodlebot-navigator/
+├── server.js                  # local server: static files, /api/chat, /api/tts (keeps the key server-side)
+├── package.json               # npm start · npm test
+├── .env.example               # copy to .env and add one API key (optional)
+├── README.md
+├── CHARACTER_DESIGN.md        # how the characters and emotions were designed
+│
+├── prompts/
+│   └── doodlebot.md           # Doodlebot's personality, answer rules and game facts
+│
+├── public/
+│   ├── index.html             # the game page
+│   ├── css/
+│   │   └── style.css          # calm pastel theme, large targets, responsive, reduced-motion aware
+│   ├── js/
+│   │   ├── algorithms.js      # sensing, frontier search, BFS, A* (pure, tested)
+│   │   ├── simulation.js      # the mission as a step-by-step generator
+│   │   ├── world.js           # editor rules, random solvable mazes, ready-made mazes, Maze ID
+│   │   ├── render.js          # canvas drawing of both maps
+│   │   ├── main.js            # game controller, emotions, metrics, results
+│   │   ├── app.js             # screens: welcome, tutorial, game; Home without losing progress
+│   │   ├── tutorial.js        # animated "How Doodlebot Thinks" (replays real simulation frames)
+│   │   ├── chat.js            # chat window, speech recognition, text-to-speech
+│   │   └── offline-brain.js   # scripted answers when no API key is set
+│   ├── characters/            # Doodlebot and Princess-Bot (SVG + CSS states, emotion controller)
+│   └── assets/                # welcome-page artwork
+│
+├── test/
+│   └── navigation.test.js     # 11 automated tests
+│
+├── design/                    # character sheet and emotion images
+├── curriculum/                # lesson plan, slides, worksheet
+├── docs/                      # design reflection and design report
+└── imgs/                      # screenshots for this README
 ```
 
 </details>
+
 
 <details>
 <summary><b>♿ Interface and accessibility</b></summary>
@@ -327,6 +342,6 @@ With more time, I would test the game with more children, and add a tele-operate
 
 <div align="center">
 
-**Made with 💙 for curious Grade 5 explorers, by Tala Alothaim**
+**Made with 🩷 for curious Grade 5 explorers, by Tala Alothaim**
 
 </div>
