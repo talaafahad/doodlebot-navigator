@@ -19,6 +19,9 @@ Doodlebot **senses** what is around it, **builds its own map**, and only then **
 </div>
 
 ---
+## 🎥 Watch the 3-minute demo
+
+▶️ **[Watch the demo video](https://drive.google.com/file/d/1T7JMBFbPlQV1pepTCgWxajuwD3P79AD4/view?usp=sharing)**: building a maze, exploration, planning, the sensor experiment and a voice chat with Doodlebot.
 
 ## 🔗 Quick links
 
@@ -27,7 +30,7 @@ Doodlebot **senses** what is around it, **builds its own map**, and only then **
 | [**Play online**](https://doodlebot-navigator.onrender.com/#welcome) | [Lesson plan (PDF)](curriculum/Doodlebot_Lesson_Plan.pdf) | [Design reflection (1 page)](docs/Doodlebot_Design_Reflection.pdf) |
 | [Run it locally](#-run-it-locally) | [Lesson slides (PPTX)](curriculum/Doodlebot_Lesson_Slides.pptx) | [Design report (how I built it)](docs/Doodlebot_Design_Report.pdf) |
 | [Doodlebot's chat prompt](prompts/doodlebot.md) | [Student worksheet (PDF)](curriculum/Doodlebot_Student_Worksheet.pdf) | [Character design](CHARACTER_DESIGN.md) |
-
+| [**Play online**](https://doodlebot-navigator.onrender.com/#welcome) · [**🎥 Demo video**](https://drive.google.com/file/d/1T7JMBFbPlQV1pepTCgWxajuwD3P79AD4/view?usp=sharing) | ...
 > ⏳ The online version runs on a free server that sleeps when nobody is playing, so the **first visit can take about 50 seconds** to load. Online, Doodlebot's chat runs in offline mode (no API key), and 🎤 voice works in **Chrome or Edge**.
 
 ---
