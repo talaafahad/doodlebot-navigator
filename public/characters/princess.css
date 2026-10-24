@@ -1,0 +1,27 @@
+.princessbot { display: block; width: 100%; line-height: 0; }
+.princessbot .pb-svg { width: 100%; height: auto; overflow: visible; }
+.princessbot .pb-float, .princessbot .pb-sparkle, .princessbot .pb-heart { transform-box: fill-box; transform-origin: center; }
+
+.princessbot .pb-face { opacity: 0; transition: opacity .3s; }
+.princessbot[data-mood="lost"]    .pb-face-lost,
+.princessbot[data-mood="rescued"] .pb-face-rescued { opacity: 1; }
+
+.princessbot .pb-float { animation: pb-float 3.4s ease-in-out infinite; }
+.princessbot .pb-sparkle { animation: pb-twinkle 1.8s ease-in-out infinite; }
+.princessbot .s2 { animation-delay: .6s; } .princessbot .s3 { animation-delay: 1.2s; }
+
+/* hearts only appear once she is rescued */
+.princessbot .pb-heart { opacity: 0; }
+.princessbot[data-mood="rescued"] .pb-heart { animation: pb-heart 1.6s ease-out infinite; }
+.princessbot[data-mood="rescued"] .h2 { animation-delay: .8s; }
+.princessbot[data-mood="lost"] .pb-sparkle { opacity: .45; animation-duration: 3s; }
+
+@keyframes pb-float { 50% { transform: translateY(-8px); } }
+@keyframes pb-twinkle { 0%, 100% { transform: scale(.7); } 50% { transform: scale(1.15); } }
+@keyframes pb-heart { 0% { opacity: 0; transform: translateY(10px) scale(.6); } 30% { opacity: 1; } 100% { opacity: 0; transform: translateY(-22px) scale(1.1); } }
+
+.princessbot.is-static *, .princessbot.is-static { animation: none !important; transition: none !important; }
+.princessbot.is-static[data-mood="rescued"] .pb-heart { opacity: 1; }
+@media (prefers-reduced-motion: reduce) {
+  .princessbot * { animation-duration: 0s !important; animation-iteration-count: 1 !important; }
+}

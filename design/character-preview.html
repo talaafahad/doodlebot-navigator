@@ -1,0 +1,798 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Doodlebot Character Sheet</title>
+<style>
+/* Doodlebot expressive states. The root .doodlebot carries data-emotion. */
+.doodlebot { --look-x: 0px; --look-y: 0px; display: block; width: 100%; line-height: 0; }
+.doodlebot .db-svg { width: 100%; height: auto; overflow: visible; }
+
+.doodlebot .db-bob,
+.doodlebot .db-head,
+.doodlebot .arm,
+.doodlebot .eye-wrap,
+.doodlebot .pupil,
+.doodlebot .talk-shape,
+.doodlebot .tear,
+.doodlebot .dots circle { transform-box: fill-box; }
+
+/* ---------- show only the active face + chest ---------- */
+.doodlebot .face,
+.doodlebot .chest { opacity: 0; transition: opacity .25s ease; }
+.doodlebot[data-emotion="idle"]     .face-idle,
+.doodlebot[data-emotion="curious"]  .face-curious,
+.doodlebot[data-emotion="thinking"] .face-thinking,
+.doodlebot[data-emotion="excited"]  .face-excited,
+.doodlebot[data-emotion="happy"]    .face-happy,
+.doodlebot[data-emotion="sad"]      .face-sad,
+.doodlebot[data-emotion="idle"]     .chest-idle,
+.doodlebot[data-emotion="curious"]  .chest-curious,
+.doodlebot[data-emotion="thinking"] .chest-thinking,
+.doodlebot[data-emotion="excited"]  .chest-excited,
+.doodlebot[data-emotion="happy"]    .chest-happy,
+.doodlebot[data-emotion="sad"]      .chest-sad { opacity: 1; }
+
+/* ---------- antenna light = second emotion signal ---------- */
+.doodlebot .db-light { fill: #7FF3F0; transition: fill .3s; }
+.doodlebot[data-emotion="thinking"] .db-light,
+.doodlebot[data-emotion="excited"]  .db-light { fill: #FFD54A; }
+.doodlebot[data-emotion="happy"]    .db-light { fill: #7CF29A; }
+.doodlebot[data-emotion="sad"]      .db-light { fill: #8A90A8; }
+.doodlebot[data-emotion="curious"]  .db-light,
+.doodlebot[data-emotion="thinking"] .db-light { animation: db-blink-light 0.9s steps(2) infinite; }
+
+/* ---------- eyes ---------- */
+.doodlebot .eye-wrap { transform-origin: center; animation: db-blink 4.6s infinite; }
+.doodlebot .pupil { transition: transform .35s ease; }
+.doodlebot[data-emotion="idle"] .pupil,
+.doodlebot[data-emotion="curious"] .pupil { transform: translate(var(--look-x), var(--look-y)); }
+.doodlebot[data-emotion="thinking"] .pupil { transform: translate(6px, -7px); }
+.doodlebot[data-emotion="sad"] .pupil { transform: translate(0, 4px); }
+
+/* ---------- arms (rotate around the shoulder) ---------- */
+/* origin = shoulder centre inside each arm's fill-box: y = 19 / (19 + 118) */
+.doodlebot .arm { transition: transform .45s cubic-bezier(.3,1.4,.5,1); }
+.doodlebot .arm-l, .doodlebot .arm-r { transform-origin: 50% 13.9%; }
+.doodlebot .arm-l { transform: rotate(22deg); }
+.doodlebot .arm-r { transform: rotate(-22deg); }
+.doodlebot[data-emotion="curious"]  .arm-r { transform: rotate(-78deg); }
+.doodlebot[data-emotion="thinking"] .arm-l { transform: rotate(-158deg); }
+.doodlebot[data-emotion="excited"]  .arm-l { animation: db-cheer-l .5s ease-in-out infinite alternate; }
+.doodlebot[data-emotion="excited"]  .arm-r { animation: db-cheer-r .5s ease-in-out infinite alternate; }
+.doodlebot[data-emotion="happy"]    .arm-l { animation: db-wave .45s ease-in-out infinite alternate; }
+.doodlebot[data-emotion="sad"]      .arm-l { transform: rotate(6deg); }
+.doodlebot[data-emotion="sad"]      .arm-r { transform: rotate(-6deg); }
+
+/* ---------- whole body + head motion ---------- */
+.doodlebot .db-head { transform-origin: 50% 100%; transition: transform .45s ease; }
+.doodlebot .db-bob { animation: db-hover 3s ease-in-out infinite; }
+.doodlebot[data-emotion="curious"]  .db-head { transform: rotate(-6deg); }
+.doodlebot[data-emotion="thinking"] .db-head { transform: rotate(5deg); }
+.doodlebot[data-emotion="sad"]      .db-head { transform: translateY(8px) rotate(-3deg); }
+.doodlebot[data-emotion="sad"]      .db-bob  { animation: db-sway 3.6s ease-in-out infinite; }
+.doodlebot[data-emotion="excited"]  .db-bob  { animation: db-jump .5s ease-out infinite alternate; }
+.doodlebot[data-emotion="happy"]    .db-bob  { animation: db-bounce .7s ease-in-out infinite alternate; }
+
+/* ---------- details ---------- */
+.doodlebot .tear { animation: db-tear 1.6s ease-in infinite; }
+.doodlebot .tear-2 { animation-delay: .8s; }
+.doodlebot .dots circle { animation: db-dot 1.2s ease-in-out infinite; transform-origin: center; }
+.doodlebot .dots circle:nth-child(2) { animation-delay: .2s; }
+.doodlebot .dots circle:nth-child(3) { animation-delay: .4s; }
+
+/* ---------- talking: replaces the mouth while TTS speaks ---------- */
+.doodlebot .talk-mouth { opacity: 0; transition: opacity .15s; }
+.doodlebot.is-talking .talk-mouth { opacity: 1; }
+.doodlebot.is-talking .mouth { opacity: 0; }
+.doodlebot.is-talking .talk-shape { transform-origin: center; animation: db-talk .18s ease-in-out infinite alternate; }
+
+@keyframes db-blink { 0%, 93%, 100% { transform: scaleY(1); } 96% { transform: scaleY(.1); } }
+@keyframes db-blink-light { 50% { fill: #E9ECF6; } }
+@keyframes db-hover { 50% { transform: translateY(-6px); } }
+@keyframes db-sway { 0%, 100% { transform: translateY(4px) rotate(-1.5deg); } 50% { transform: translateY(4px) rotate(1.5deg); } }
+@keyframes db-jump { from { transform: translateY(0); } to { transform: translateY(-22px); } }
+@keyframes db-bounce { from { transform: translateY(0); } to { transform: translateY(-10px); } }
+@keyframes db-wave { from { transform: rotate(140deg); } to { transform: rotate(165deg); } }
+@keyframes db-cheer-l { from { transform: rotate(135deg); } to { transform: rotate(155deg); } }
+@keyframes db-cheer-r { from { transform: rotate(-135deg); } to { transform: rotate(-155deg); } }
+@keyframes db-tear { 0% { transform: translateY(0); opacity: 0; } 15% { opacity: 1; } 100% { transform: translateY(26px); opacity: 0; } }
+@keyframes db-dot { 0%, 100% { transform: translateY(0); opacity: .45; } 40% { transform: translateY(-7px); opacity: 1; } }
+@keyframes db-talk { from { transform: scaleY(.3); } to { transform: scaleY(1); } }
+
+/* Freeze for still exports, and respect reduced-motion users */
+.doodlebot.is-static *, .doodlebot.is-static { animation: none !important; transition: none !important; }
+.doodlebot.is-static .tear { opacity: 1; transform: translateY(6px); }
+.doodlebot.is-static[data-emotion="happy"] .arm-l { transform: rotate(152deg); }
+.doodlebot.is-static[data-emotion="excited"] .arm-l { transform: rotate(145deg); }
+.doodlebot.is-static[data-emotion="excited"] .arm-r { transform: rotate(-145deg); }
+@media (prefers-reduced-motion: reduce) {
+  .doodlebot * { animation-duration: 0s !important; animation-iteration-count: 1 !important; }
+}
+.princessbot { display: block; width: 100%; line-height: 0; }
+.princessbot .pb-svg { width: 100%; height: auto; overflow: visible; }
+.princessbot .pb-float, .princessbot .pb-sparkle, .princessbot .pb-heart { transform-box: fill-box; transform-origin: center; }
+
+.princessbot .pb-face { opacity: 0; transition: opacity .3s; }
+.princessbot[data-mood="lost"]    .pb-face-lost,
+.princessbot[data-mood="rescued"] .pb-face-rescued { opacity: 1; }
+
+.princessbot .pb-float { animation: pb-float 3.4s ease-in-out infinite; }
+.princessbot .pb-sparkle { animation: pb-twinkle 1.8s ease-in-out infinite; }
+.princessbot .s2 { animation-delay: .6s; } .princessbot .s3 { animation-delay: 1.2s; }
+
+/* hearts only appear once she is rescued */
+.princessbot .pb-heart { opacity: 0; }
+.princessbot[data-mood="rescued"] .pb-heart { animation: pb-heart 1.6s ease-out infinite; }
+.princessbot[data-mood="rescued"] .h2 { animation-delay: .8s; }
+.princessbot[data-mood="lost"] .pb-sparkle { opacity: .45; animation-duration: 3s; }
+
+@keyframes pb-float { 50% { transform: translateY(-8px); } }
+@keyframes pb-twinkle { 0%, 100% { transform: scale(.7); } 50% { transform: scale(1.15); } }
+@keyframes pb-heart { 0% { opacity: 0; transform: translateY(10px) scale(.6); } 30% { opacity: 1; } 100% { opacity: 0; transform: translateY(-22px) scale(1.1); } }
+
+.princessbot.is-static *, .princessbot.is-static { animation: none !important; transition: none !important; }
+.princessbot.is-static[data-mood="rescued"] .pb-heart { opacity: 1; }
+@media (prefers-reduced-motion: reduce) {
+  .princessbot * { animation-duration: 0s !important; animation-iteration-count: 1 !important; }
+}
+
+</style>
+<style>
+  :root { --bg: #F6F7FC; --card: #fff; --ink: #1E2A5A; --muted: #5B6488; --line: #DCE0EF; --accent: #3B7BE8; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: "Trebuchet MS", system-ui, sans-serif; }
+  main { max-width: 1100px; margin: 0 auto; padding: 28px 16px 60px; }
+  h1 { margin: 0 0 4px; font-size: 28px; }
+  h2 { margin: 36px 0 12px; font-size: 20px; }
+  p.lead { margin: 0; color: var(--muted); }
+  .sheet { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 14px; }
+  .card { background: var(--card); border: 2px solid var(--line); border-radius: 18px; padding: 12px; text-align: center; }
+  .card .bot { width: 100%; max-width: 150px; margin: 0 auto; }
+  .card b { display: block; font-size: 16px; text-transform: capitalize; }
+  .card small { color: var(--muted); display: block; margin-top: 2px; }
+  .card q { display: block; margin-top: 8px; font-size: 13px; }
+  .play { display: grid; grid-template-columns: minmax(220px, 300px) 1fr; gap: 24px; align-items: center; background: var(--card); border: 2px solid var(--line); border-radius: 22px; padding: 20px; }
+  .stage { position: relative; }
+  .bubble { position: relative; background: #fff; border: 3px solid var(--ink); border-radius: 18px; padding: 10px 14px; font-size: 16px; min-height: 48px; margin-bottom: 14px; }
+  .bubble::after { content: ""; position: absolute; left: 50%; bottom: -14px; border: 12px solid transparent; border-top-color: var(--ink); border-bottom: 0; transform: translateX(-50%); }
+  .controls h3 { margin: 0 0 8px; font-size: 15px; color: var(--muted); }
+  .btns { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+  button { font: inherit; font-size: 14px; padding: 8px 14px; border-radius: 999px; border: 2px solid var(--ink); background: #fff; color: var(--ink); cursor: pointer; text-transform: capitalize; }
+  button[aria-pressed="true"] { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .pair { display: flex; flex-wrap: wrap; gap: 16px; }
+  .pair .card { width: 200px; }
+  canvas { background: #fff; border: 2px solid var(--line); border-radius: 14px; max-width: 100%; }
+  table { border-collapse: collapse; width: 100%; background: var(--card); border-radius: 14px; overflow: hidden; }
+  th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); font-size: 14px; }
+  th { background: #EEF1FA; }
+  @media (max-width: 640px) { .play { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>Doodlebot &amp; Princess-Bot</h1>
+  <p class="lead">Character sheet: every emotion is tied to a real game event. Faces live on Doodlebot's screens, so they can blink, look around and talk.</p>
+
+  <h2>Emotion sheet</h2>
+  <div class="sheet" id="sheet"></div>
+
+  <h2>Try it</h2>
+  <div class="play">
+    <div class="stage">
+      <div class="bubble" id="bubble">Build me a maze! I'm ready to explore.</div>
+      <div id="bigbot"></div>
+    </div>
+    <div class="controls">
+      <h3>Emotion</h3>
+      <div class="btns" id="emo-btns"></div>
+      <h3>Look toward travel direction (idle / curious)</h3>
+      <div class="btns" id="look-btns"></div>
+      <h3>Voice</h3>
+      <div class="btns"><button id="say">Say the line aloud</button><button id="talk" aria-pressed="false">Talking mouth</button></div>
+    </div>
+  </div>
+
+  <h2>Princess-Bot</h2>
+  <div class="pair" id="princess"></div>
+
+  <h2>Grid tokens (44px cells)</h2>
+  <canvas id="grid" width="440" height="132"></canvas>
+
+  <h2>Event → emotion</h2>
+  <table id="events"><thead><tr><th>Game event</th><th>Emotion</th></tr></thead><tbody></tbody></table>
+</main>
+
+<script type="module">
+// ---- doodlebot.js ----
+const { EMOTIONS, createDoodlebot } = (() => {
+// Doodlebot character — one layered SVG, every emotion drawn on its screens.
+// Usage:
+//   const bot = createDoodlebot(document.querySelector('#bot'));
+//   bot.setEmotion('curious');   // idle | curious | thinking | excited | happy | sad
+//   bot.lookAt(1, 0);            // eyes follow the direction of travel (curious / idle)
+//   bot.setTalking(true);        // mouth moves while TTS is speaking
+
+const EMOTIONS = ['idle', 'curious', 'thinking', 'excited', 'happy', 'sad'];
+
+const NAVY = '#1E2A5A';
+const BLUE = 'url(#db-blue)';
+const GLOW = '#7FF3F0';
+
+// ---------- reusable parts ----------
+function roundEye(cx, cy) {
+  return `
+  <g class="eye-wrap">
+    <g class="pupil">
+      <ellipse cx="${cx}" cy="${cy}" rx="20" ry="24" fill="${NAVY}"/>
+      <ellipse cx="${cx + 2}" cy="${cy + 12}" rx="13" ry="7" fill="#9B6BE0"/>
+      <circle cx="${cx - 7}" cy="${cy - 9}" r="7" fill="#fff"/>
+      <circle cx="${cx + 7}" cy="${cy + 6}" r="3.5" fill="#fff"/>
+    </g>
+  </g>`;
+}
+
+function star(cx, cy, r) {
+  const pts = [];
+  for (let i = 0; i < 10; i++) {
+    const a = -Math.PI / 2 + (i * Math.PI) / 5;
+    const rr = i % 2 === 0 ? r : r * 0.48;
+    pts.push(`${(cx + rr * Math.cos(a)).toFixed(1)},${(cy + rr * Math.sin(a)).toFixed(1)}`);
+  }
+  return `<polygon points="${pts.join(' ')}" fill="#FFD54A" stroke="${NAVY}" stroke-width="4" stroke-linejoin="round"/>`;
+}
+
+function sparkle(cx, cy, r, fill = '#FFD54A') {
+  const s = r, t = r * 0.28;
+  return `<path d="M${cx} ${cy - s} Q${cx + t} ${cy - t} ${cx + s} ${cy} Q${cx + t} ${cy + t} ${cx} ${cy + s} Q${cx - t} ${cy + t} ${cx - s} ${cy} Q${cx - t} ${cy - t} ${cx} ${cy - s}Z" fill="${fill}"/>`;
+}
+
+const HEART = 'M200 318 C170 300 176 278 192 280 C198 281 200 286 200 288 C200 286 202 281 208 280 C224 278 230 300 200 318Z';
+
+function arm(side) {
+  // drawn hanging straight down from the shoulder at (0,0); rotated by CSS
+  const thumbX = side === 'l' ? 15 : -15;   // thumb stays inside the hand's width, so the shoulder is the fill-box centre
+  return `
+  <g class="arm arm-${side}">
+    <rect x="-12" y="10" width="24" height="56" rx="10" fill="#E9ECF6" stroke="${NAVY}" stroke-width="5"/>
+    <line x1="-9" y1="28" x2="9" y2="28" stroke="#9AA3C0" stroke-width="4" stroke-linecap="round"/>
+    <line x1="-9" y1="44" x2="9" y2="44" stroke="#9AA3C0" stroke-width="4" stroke-linecap="round"/>
+    <circle cx="0" cy="0" r="19" fill="${BLUE}" stroke="${NAVY}" stroke-width="5"/>
+    <ellipse cx="${thumbX}" cy="78" rx="9" ry="13" fill="${BLUE}" stroke="${NAVY}" stroke-width="5"/>
+    <ellipse cx="0" cy="92" rx="24" ry="26" fill="${BLUE}" stroke="${NAVY}" stroke-width="5"/>
+    <ellipse cx="-8" cy="82" rx="7" ry="5" fill="#fff" opacity=".45"/>
+  </g>`;
+}
+
+function track(x, rimX) {
+  return `
+  <g>
+    <rect x="${x}" y="318" width="74" height="112" rx="30" fill="#4A4F63" stroke="${NAVY}" stroke-width="6"/>
+    ${[342, 364, 386, 408].map(y => `<line x1="${x + 8}" y1="${y}" x2="${x + 66}" y2="${y}" stroke="#2E3245" stroke-width="4" stroke-linecap="round"/>`).join('')}
+    <ellipse cx="${rimX}" cy="374" rx="20" ry="46" fill="${BLUE}" stroke="${NAVY}" stroke-width="6"/>
+    <ellipse cx="${rimX}" cy="374" rx="9" ry="28" fill="#E9ECF6" stroke="${NAVY}" stroke-width="4"/>
+  </g>`;
+}
+
+// ---------- faces (drawn on the teal screen, centre ≈ 200,132) ----------
+const BLUSH = `<ellipse cx="128" cy="162" rx="12" ry="7" fill="#FF8FB1" opacity=".75"/>
+               <ellipse cx="272" cy="162" rx="12" ry="7" fill="#FF8FB1" opacity=".75"/>`;
+
+const FACES = {
+  idle: `
+    ${roundEye(160, 126)}${roundEye(240, 126)}
+    <path class="mouth" d="M184 166 Q200 180 216 166" fill="none" stroke="${NAVY}" stroke-width="5" stroke-linecap="round"/>`,
+
+  curious: `
+    <path d="M140 94 Q160 82 182 92" fill="none" stroke="${NAVY}" stroke-width="5" stroke-linecap="round"/>
+    <path d="M222 100 Q240 96 260 102" fill="none" stroke="${NAVY}" stroke-width="5" stroke-linecap="round"/>
+    ${roundEye(160, 126)}${roundEye(240, 126)}
+    <g class="mouth">
+      <ellipse cx="200" cy="172" rx="9" ry="11" fill="${NAVY}"/>
+      <ellipse cx="200" cy="177" rx="5" ry="4" fill="#FF7A9A"/>
+    </g>`,
+
+  thinking: `
+    <path d="M140 100 Q160 92 180 98" fill="none" stroke="${NAVY}" stroke-width="5" stroke-linecap="round"/>
+    <path d="M220 92 Q242 86 262 96" fill="none" stroke="${NAVY}" stroke-width="5" stroke-linecap="round"/>
+    ${roundEye(160, 126)}${roundEye(240, 126)}
+    <path class="mouth" d="M188 172 Q196 165 204 172 T220 170" fill="none" stroke="${NAVY}" stroke-width="5" stroke-linecap="round"/>`,
+
+  excited: `
+    ${star(160, 124, 27)}${star(240, 124, 27)}
+    <circle cx="152" cy="114" r="4" fill="#fff"/><circle cx="232" cy="114" r="4" fill="#fff"/>
+    ${BLUSH}
+    <g class="mouth">
+      <path d="M170 156 Q200 200 230 156 Z" fill="${NAVY}" stroke="${NAVY}" stroke-width="4" stroke-linejoin="round"/>
+      <path d="M186 176 Q200 190 214 176 Q200 168 186 176Z" fill="#FF7A9A"/>
+    </g>`,
+
+  happy: `
+    <path d="M138 134 Q160 104 182 134" fill="none" stroke="${NAVY}" stroke-width="8" stroke-linecap="round"/>
+    <path d="M218 134 Q240 104 262 134" fill="none" stroke="${NAVY}" stroke-width="8" stroke-linecap="round"/>
+    ${BLUSH}
+    <g class="mouth">
+      <path d="M174 154 Q200 190 226 154 Z" fill="${NAVY}" stroke="${NAVY}" stroke-width="4" stroke-linejoin="round"/>
+      <path d="M188 172 Q200 184 212 172 Q200 166 188 172Z" fill="#FF7A9A"/>
+    </g>`,
+
+  sad: `
+    <path d="M140 102 Q158 96 178 86" fill="none" stroke="${NAVY}" stroke-width="5" stroke-linecap="round"/>
+    <path d="M222 86 Q242 96 260 102" fill="none" stroke="${NAVY}" stroke-width="5" stroke-linecap="round"/>
+    ${roundEye(160, 128)}${roundEye(240, 128)}
+    <path class="tear tear-1" d="M146 146 Q134 166 146 174 Q158 166 146 146Z" fill="#7CC8FF" stroke="${NAVY}" stroke-width="3"/>
+    <path class="tear tear-2" d="M254 146 Q242 166 254 174 Q266 166 254 146Z" fill="#7CC8FF" stroke="${NAVY}" stroke-width="3"/>
+    <path class="mouth" d="M184 178 Q200 162 216 178" fill="none" stroke="${NAVY}" stroke-width="5" stroke-linecap="round"/>`,
+};
+
+// ---------- chest screen (centre ≈ 200,300) ----------
+const CHEST = {
+  idle: `<polyline points="160,300 180,300 188,286 198,314 206,292 214,300 240,300" fill="none" stroke="${GLOW}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>`,
+  curious: `<text x="200" y="317" text-anchor="middle" font-family="Trebuchet MS, Arial Rounded MT Bold, sans-serif" font-weight="900" font-size="48" fill="${GLOW}">?</text>`,
+  thinking: `<g class="dots"><circle cx="178" cy="300" r="7" fill="${GLOW}"/><circle cx="200" cy="300" r="7" fill="${GLOW}"/><circle cx="222" cy="300" r="7" fill="${GLOW}"/></g>`,
+  excited: `${sparkle(200, 298, 20)}${sparkle(172, 284, 9, GLOW)}${sparkle(230, 316, 8, GLOW)}`,
+  happy: `<path d="${HEART}" fill="${GLOW}"/>
+          <g stroke="${GLOW}" stroke-width="3.5" stroke-linecap="round"><line x1="164" y1="290" x2="174" y2="294"/><line x1="164" y1="308" x2="174" y2="304"/><line x1="236" y1="290" x2="226" y2="294"/><line x1="236" y1="308" x2="226" y2="304"/></g>`,
+  sad: `<path d="${HEART}" fill="#FF8FA3"/>
+        <polyline points="200,284 193,296 205,304 196,318" fill="none" stroke="#2B57B8" stroke-width="4.5" stroke-linejoin="round" stroke-linecap="round"/>`,
+};
+
+function svgMarkup() {
+  return `
+<svg class="db-svg" viewBox="0 0 400 460" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Doodlebot">
+  <defs>
+    <linearGradient id="db-body" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F4F6FC"/><stop offset="1" stop-color="#C9CFE2"/></linearGradient>
+    <linearGradient id="db-blue" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5E9BF7"/><stop offset="1" stop-color="#2F67D6"/></linearGradient>
+    <linearGradient id="db-screen" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8FE9E6"/><stop offset="1" stop-color="#5ACDCB"/></linearGradient>
+    <linearGradient id="db-chest" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3A6CD6"/><stop offset="1" stop-color="#244FA8"/></linearGradient>
+  </defs>
+
+  <ellipse class="db-shadow" cx="200" cy="440" rx="125" ry="13" fill="#C9CFF5"/>
+
+  <g class="db-bob">
+    ${track(72, 92)}
+    ${track(254, 308)}
+
+    <!-- body -->
+    <rect x="118" y="236" width="164" height="158" rx="40" fill="url(#db-body)" stroke="${NAVY}" stroke-width="6"/>
+    <path d="M124 350 Q200 378 276 350 L276 356 Q274 388 240 391 L160 391 Q126 388 124 356Z" fill="#B7BDD3" opacity=".55"/>
+    <rect x="134" y="246" width="44" height="9" rx="4.5" fill="#fff" opacity=".7"/>
+    <rect x="150" y="262" width="100" height="74" rx="14" fill="url(#db-chest)" stroke="${NAVY}" stroke-width="5"/>
+    <g class="chest-layer">
+      ${EMOTIONS.map(e => `<g class="chest chest-${e}">${CHEST[e]}</g>`).join('')}
+    </g>
+
+    <!-- neck -->
+    <rect x="184" y="212" width="32" height="30" rx="6" fill="#C3C8DB" stroke="${NAVY}" stroke-width="5"/>
+
+    <!-- head -->
+    <g class="db-head">
+      <line x1="200" y1="48" x2="200" y2="22" stroke="${NAVY}" stroke-width="6" stroke-linecap="round"/>
+      <circle class="db-light" cx="200" cy="16" r="11" stroke="${NAVY}" stroke-width="5"/>
+      <circle cx="86" cy="130" r="28" fill="${BLUE}" stroke="${NAVY}" stroke-width="6"/>
+      <circle cx="314" cy="130" r="28" fill="${BLUE}" stroke="${NAVY}" stroke-width="6"/>
+      <rect x="92" y="46" width="216" height="172" rx="40" fill="url(#db-body)" stroke="${NAVY}" stroke-width="6"/>
+      <rect x="110" y="64" width="180" height="136" rx="26" fill="url(#db-screen)" stroke="${NAVY}" stroke-width="5"/>
+      <path d="M126 80 Q128 72 138 72 L170 72 Q160 76 152 84 L132 108 Q124 112 124 102Z" fill="#fff" opacity=".35"/>
+      <g class="face-layer">
+        ${EMOTIONS.map(e => `<g class="face face-${e}">${FACES[e]}</g>`).join('')}
+        <g class="talk-mouth">
+          <ellipse class="talk-shape" cx="200" cy="172" rx="14" ry="11" fill="${NAVY}"/>
+          <ellipse class="talk-shape" cx="200" cy="178" rx="7" ry="4" fill="#FF7A9A"/>
+        </g>
+      </g>
+    </g>
+
+    <!-- arms (in front of the body) -->
+    <g transform="translate(118 272)">${arm('l')}</g>
+    <g transform="translate(282 272)">${arm('r')}</g>
+  </g>
+</svg>`;
+}
+
+function createDoodlebot(container, { emotion = 'idle' } = {}) {
+  const root = document.createElement('div');
+  root.className = 'doodlebot';
+  root.innerHTML = svgMarkup();
+  container.appendChild(root);
+
+  // Gradient ids must be unique per page when several bots are mounted.
+  const uid = 'db' + Math.random().toString(36).slice(2, 8);
+  root.querySelectorAll('[id^="db-"]').forEach(el => {
+    const old = el.id;
+    el.id = `${uid}-${old}`;
+    root.querySelectorAll(`[fill="url(#${old})"]`).forEach(n => n.setAttribute('fill', `url(#${uid}-${old})`));
+  });
+
+  const api = {
+    el: root,
+    setEmotion(name) {
+      if (!EMOTIONS.includes(name)) throw new Error(`Unknown emotion: ${name}`);
+      root.dataset.emotion = name;
+    },
+    getEmotion() { return root.dataset.emotion; },
+    setTalking(on) { root.classList.toggle('is-talking', !!on); },
+    // dx, dy in grid units (e.g. 1,0 = moving right). Eyes shift up to 7px.
+    lookAt(dx = 0, dy = 0) {
+      const len = Math.hypot(dx, dy) || 1;
+      root.style.setProperty('--look-x', `${(dx / len) * 7}px`);
+      root.style.setProperty('--look-y', `${(dy / len) * 6}px`);
+    },
+    destroy() { root.remove(); },
+  };
+  api.setEmotion(emotion);
+  return api;
+}
+
+return { EMOTIONS, createDoodlebot };
+})();
+
+// ---- princess.js ----
+const { createPrincessBot } = (() => {
+// Princess-Bot — deliberately a different silhouette from Doodlebot:
+// tall egg body (not boxy), hovers (no tracks), crown, plum visor (not a teal screen), pink/lavender palette.
+//   const pb = createPrincessBot(el); pb.setMood('lost' | 'rescued');
+
+const NAVY = '#1E2A5A';
+
+function sparkle(cx, cy, r, cls = '') {
+  const t = r * 0.28;
+  return `<path class="pb-sparkle ${cls}" d="M${cx} ${cy - r} Q${cx + t} ${cy - t} ${cx + r} ${cy} Q${cx + t} ${cy + t} ${cx} ${cy + r} Q${cx - t} ${cy + t} ${cx - r} ${cy} Q${cx - t} ${cy - t} ${cx} ${cy - r}Z" fill="#FFD54A" stroke="${NAVY}" stroke-width="2.5"/>`;
+}
+
+function smallHeart(x, y, s, cls) {
+  // wrapper <g> carries the CSS animation so it doesn't override the positioning transform
+  return `<g class="${cls}"><path transform="translate(${x} ${y}) scale(${s})" d="M0 10 C-14 2 -11 -9 -4 -8 C-1 -8 0 -5 0 -4 C0 -5 1 -8 4 -8 C11 -9 14 2 0 10Z" fill="#FF6FA8" stroke="${NAVY}" stroke-width="${2.5 / s}"/></g>`;
+}
+
+const FACES = {
+  lost: `
+    <path d="M118 150 Q128 144 140 148" fill="none" stroke="#FFC6E3" stroke-width="4" stroke-linecap="round"/>
+    <path d="M160 148 Q172 144 182 150" fill="none" stroke="#FFC6E3" stroke-width="4" stroke-linecap="round"/>
+    <ellipse cx="129" cy="170" rx="12" ry="15" fill="#FFE3F2"/><circle cx="125" cy="164" r="6" fill="${NAVY}"/><circle cx="123" cy="162" r="2.2" fill="#fff"/>
+    <ellipse cx="171" cy="170" rx="12" ry="15" fill="#FFE3F2"/><circle cx="167" cy="164" r="6" fill="${NAVY}"/><circle cx="165" cy="162" r="2.2" fill="#fff"/>
+    <path d="M114 160 l-6 -4 M116 168 l-7 0" stroke="#FFC6E3" stroke-width="3" stroke-linecap="round"/>
+    <path d="M186 160 l6 -4 M184 168 l7 0" stroke="#FFC6E3" stroke-width="3" stroke-linecap="round"/>
+    <ellipse cx="150" cy="195" rx="6" ry="7" fill="#FFC6E3"/>`,
+  rescued: `
+    <path d="M116 174 Q129 156 142 174" fill="none" stroke="#FFE3F2" stroke-width="6" stroke-linecap="round"/>
+    <path d="M158 174 Q171 156 184 174" fill="none" stroke="#FFE3F2" stroke-width="6" stroke-linecap="round"/>
+    <path d="M110 162 l-6 -5 M184 162 l6 -5" stroke="#FFC6E3" stroke-width="3" stroke-linecap="round"/>
+    <path d="M136 188 Q150 204 164 188" fill="none" stroke="#FFE3F2" stroke-width="5" stroke-linecap="round"/>
+    <ellipse cx="112" cy="190" rx="8" ry="5" fill="#FF8FC4" opacity=".8"/><ellipse cx="188" cy="190" rx="8" ry="5" fill="#FF8FC4" opacity=".8"/>`,
+};
+
+function svgMarkup() {
+  return `
+<svg class="pb-svg" viewBox="0 0 300 420" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Princess-Bot">
+  <defs>
+    <linearGradient id="pb-body" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFC4E1"/><stop offset="1" stop-color="#EE6FB0"/></linearGradient>
+    <linearGradient id="pb-visor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6A3C95"/><stop offset="1" stop-color="#3E2160"/></linearGradient>
+    <linearGradient id="pb-gold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFE07A"/><stop offset="1" stop-color="#F5B82E"/></linearGradient>
+    <radialGradient id="pb-glow"><stop offset="0" stop-color="#E9B8FF" stop-opacity=".9"/><stop offset="1" stop-color="#E9B8FF" stop-opacity="0"/></radialGradient>
+  </defs>
+
+  <ellipse cx="150" cy="402" rx="70" ry="10" fill="#E6D3FA"/>
+  <g class="pb-float">
+    <ellipse cx="150" cy="372" rx="78" ry="26" fill="url(#pb-glow)"/>
+    <ellipse cx="150" cy="352" rx="58" ry="15" fill="#C8B3F5" stroke="${NAVY}" stroke-width="5"/>
+    <ellipse cx="150" cy="349" rx="34" ry="7" fill="#EDE3FF"/>
+
+    <!-- little arms -->
+    <ellipse cx="62" cy="252" rx="16" ry="26" transform="rotate(20 62 252)" fill="url(#pb-body)" stroke="${NAVY}" stroke-width="5"/>
+    <ellipse cx="238" cy="252" rx="16" ry="26" transform="rotate(-20 238 252)" fill="url(#pb-body)" stroke="${NAVY}" stroke-width="5"/>
+
+    <!-- egg body -->
+    <path d="M150 84 C228 84 246 206 242 254 C238 312 200 338 150 338 C100 338 62 312 58 254 C54 206 72 84 150 84Z" fill="url(#pb-body)" stroke="${NAVY}" stroke-width="6"/>
+    <path d="M86 132 Q96 104 122 96" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round" opacity=".6"/>
+    <path d="M70 262 Q150 296 230 262" fill="none" stroke="#C94F93" stroke-width="5" stroke-linecap="round" opacity=".7"/>
+    ${smallHeart(150, 286, 1.4, 'pb-gem')}
+
+    <!-- visor face -->
+    <rect x="92" y="126" width="116" height="98" rx="46" fill="url(#pb-visor)" stroke="${NAVY}" stroke-width="5"/>
+    <path d="M106 150 Q112 136 128 134" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".35"/>
+    <g class="pb-face pb-face-lost">${FACES.lost}</g>
+    <g class="pb-face pb-face-rescued">${FACES.rescued}</g>
+
+    <!-- crown -->
+    <path d="M108 92 L114 48 L132 70 L150 36 L168 70 L186 48 L192 92 Q150 104 108 92Z" fill="url(#pb-gold)" stroke="${NAVY}" stroke-width="5" stroke-linejoin="round"/>
+    <circle cx="114" cy="46" r="6" fill="#FF6FA8" stroke="${NAVY}" stroke-width="3"/>
+    <circle cx="150" cy="34" r="7" fill="#7FF3F0" stroke="${NAVY}" stroke-width="3"/>
+    <circle cx="186" cy="46" r="6" fill="#FF6FA8" stroke="${NAVY}" stroke-width="3"/>
+
+    ${sparkle(44, 120, 12, 's1')}${sparkle(258, 96, 10, 's2')}${sparkle(262, 196, 7, 's3')}
+    ${smallHeart(56, 66, 1.1, 'pb-heart h1')}${smallHeart(246, 46, 0.9, 'pb-heart h2')}
+  </g>
+</svg>`;
+}
+
+function createPrincessBot(container, { mood = 'lost' } = {}) {
+  const root = document.createElement('div');
+  root.className = 'princessbot';
+  root.innerHTML = svgMarkup();
+  container.appendChild(root);
+  const uid = 'pb' + Math.random().toString(36).slice(2, 8);
+  root.querySelectorAll('[id^="pb-"]').forEach(el => {
+    const old = el.id;
+    el.id = `${uid}-${old}`;
+    root.querySelectorAll(`[fill="url(#${old})"]`).forEach(n => n.setAttribute('fill', `url(#${uid}-${old})`));
+  });
+  const api = {
+    el: root,
+    setMood(m) { root.dataset.mood = m === 'rescued' ? 'rescued' : 'lost'; },
+    destroy() { root.remove(); },
+  };
+  api.setMood(mood);
+  return api;
+}
+
+return { createPrincessBot };
+})();
+
+// ---- tokens.js ----
+const { drawDoodlebotToken, drawPrincessToken } = (() => {
+// Small canvas versions for the 12×12 grid. Full detail turns to mush at ~40px,
+// so these keep only what reads at that size: silhouette, colour, eyes, mouth.
+//   drawDoodlebotToken(ctx, cx, cy, cellSize, { dir: [dx, dy], emotion })
+//   drawPrincessToken(ctx, cx, cy, cellSize)
+
+const NAVY = '#1E2A5A';
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+
+const LIGHT = { idle: '#7FF3F0', curious: '#7FF3F0', thinking: '#FFD54A', excited: '#FFD54A', happy: '#7CF29A', sad: '#8A90A8' };
+
+function drawDoodlebotToken(ctx, cx, cy, cell, { dir = [0, 1], emotion = 'idle' } = {}) {
+  const s = cell * 0.84;             // overall size
+  const lw = Math.max(1.5, s * 0.055);
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
+  ctx.strokeStyle = NAVY;
+  ctx.lineWidth = lw;
+
+  // tracks
+  ctx.fillStyle = '#4A4F63';
+  roundRect(ctx, -s * 0.5, -s * 0.12, s * 0.16, s * 0.56, s * 0.07); ctx.fill(); ctx.stroke();
+  roundRect(ctx, s * 0.34, -s * 0.12, s * 0.16, s * 0.56, s * 0.07); ctx.fill(); ctx.stroke();
+
+  // antenna
+  ctx.beginPath(); ctx.moveTo(0, -s * 0.38); ctx.lineTo(0, -s * 0.48); ctx.stroke();
+  ctx.fillStyle = LIGHT[emotion] || LIGHT.idle;
+  ctx.beginPath(); ctx.arc(0, -s * 0.5, s * 0.07, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+
+  // head / body block
+  ctx.fillStyle = '#3B7BE8';
+  roundRect(ctx, -s * 0.38, -s * 0.38, s * 0.76, s * 0.8, s * 0.18); ctx.fill(); ctx.stroke();
+
+  // screen face
+  ctx.fillStyle = '#6EDAD8';
+  roundRect(ctx, -s * 0.28, -s * 0.28, s * 0.56, s * 0.42, s * 0.11); ctx.fill();
+  ctx.lineWidth = lw * 0.7; ctx.stroke(); ctx.lineWidth = lw;
+
+  // eyes look toward the direction of travel
+  const len = Math.hypot(dir[0], dir[1]) || 1;
+  const ox = (dir[0] / len) * s * 0.05, oy = (dir[1] / len) * s * 0.04;
+  const ey = -s * 0.1 + (emotion === 'sad' ? s * 0.02 : 0);
+  ctx.fillStyle = NAVY;
+  if (emotion === 'happy') {
+    ctx.lineWidth = lw * 1.1;
+    for (const ex of [-s * 0.12, s * 0.12]) { ctx.beginPath(); ctx.arc(ex, ey + s * 0.03, s * 0.06, Math.PI * 1.15, Math.PI * 1.85); ctx.stroke(); }
+    ctx.lineWidth = lw;
+  } else {
+    for (const ex of [-s * 0.12, s * 0.12]) {
+      ctx.beginPath(); ctx.ellipse(ex + ox, ey + oy, s * 0.055, s * 0.07, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#fff';
+      ctx.beginPath(); ctx.arc(ex + ox - s * 0.018, ey + oy - s * 0.025, s * 0.02, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = NAVY;
+    }
+  }
+
+  // mouth
+  ctx.lineWidth = lw * 0.8;
+  ctx.beginPath();
+  if (emotion === 'sad') ctx.arc(0, s * 0.1, s * 0.06, Math.PI * 1.2, Math.PI * 1.8);
+  else if (emotion === 'happy' || emotion === 'excited') ctx.arc(0, s * 0.02, s * 0.07, Math.PI * 0.2, Math.PI * 0.8);
+  else ctx.arc(0, s * 0.03, s * 0.045, Math.PI * 0.25, Math.PI * 0.75);
+  ctx.stroke();
+
+  // chest light strip
+  ctx.fillStyle = LIGHT[emotion] || LIGHT.idle;
+  roundRect(ctx, -s * 0.12, s * 0.22, s * 0.24, s * 0.08, s * 0.04); ctx.fill();
+  ctx.restore();
+}
+
+function drawPrincessToken(ctx, cx, cy, cell) {
+  const s = cell * 0.84;
+  const lw = Math.max(1.5, s * 0.055);
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.lineJoin = 'round';
+  ctx.strokeStyle = NAVY;
+  ctx.lineWidth = lw;
+
+  // egg body
+  ctx.fillStyle = '#F27AB8';
+  ctx.beginPath(); ctx.ellipse(0, s * 0.08, s * 0.32, s * 0.4, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+
+  // visor
+  ctx.fillStyle = '#4E2A75';
+  roundRect(ctx, -s * 0.22, -s * 0.06, s * 0.44, s * 0.3, s * 0.14); ctx.fill();
+  ctx.fillStyle = '#FFE3F2';
+  for (const ex of [-s * 0.09, s * 0.09]) { ctx.beginPath(); ctx.ellipse(ex, s * 0.08, s * 0.045, s * 0.06, 0, 0, Math.PI * 2); ctx.fill(); }
+
+  // crown — the key silhouette difference from Doodlebot
+  ctx.fillStyle = '#FFC94A';
+  ctx.beginPath();
+  ctx.moveTo(-s * 0.2, -s * 0.26);
+  ctx.lineTo(-s * 0.22, -s * 0.5);
+  ctx.lineTo(-s * 0.1, -s * 0.38);
+  ctx.lineTo(0, -s * 0.55);
+  ctx.lineTo(s * 0.1, -s * 0.38);
+  ctx.lineTo(s * 0.22, -s * 0.5);
+  ctx.lineTo(s * 0.2, -s * 0.26);
+  ctx.closePath(); ctx.fill(); ctx.stroke();
+  ctx.restore();
+}
+
+return { drawDoodlebotToken, drawPrincessToken };
+})();
+
+// ---- emotions.js ----
+const { EVENT_TO_EMOTION, LINES, lineFor, createEmotionController } = (() => {
+// Which game event shows which emotion, plus the speech-bubble lines.
+// The lines are DRAFTS — rewrite them in Doodlebot's (your) own voice.
+
+const EVENT_TO_EMOTION = {
+  editing: 'idle',              // student is building the maze
+  exploreStep: 'curious',       // moving toward the nearest unknown area
+  princessSensed: 'excited',    // Princess-Bot entered the sensor range
+  explorationDone: 'thinking',  // map complete, heading home / planning
+  planning: 'thinking',         // path planner is searching
+  pathFound: 'happy',           // shortest path drawn / Princess reached
+  noPath: 'sad',                // planner proved there is no path
+};
+
+const LINES = {
+  idle:     ['Build me a maze! I\'m ready to explore.', 'Where do you think Princess-Bot is hiding?'],
+  curious:  ['Hmm… what\'s over there?', 'My sensors want to see that dark corner!', 'New cells! Adding them to my map.'],
+  excited:  ['I SEE HER! Princess-Bot is on my map!', 'There she is! Hang on, Princess-Bot!'],
+  thinking: ['My map is finished. Let me plan the shortest way…', 'Checking every route… hmm…'],
+  happy:    ['I found the shortest path! Here I come!', 'We did it! Princess-Bot is safe!'],
+  sad:      ['Every way is blocked… I can\'t reach her. Can you open a path for me?'],
+};
+
+function lineFor(emotion) {
+  const options = LINES[emotion] || LINES.idle;
+  return options[Math.floor(Math.random() * options.length)];
+}
+
+// Keeps each emotion on screen long enough for a 10-year-old to read it.
+// A fast exploration run would otherwise flicker between faces.
+function createEmotionController(bot, { minHoldMs = 1200, onChange } = {}) {
+  let lastChange = 0;
+  let pending = null;
+  let timer = null;
+
+  function apply(emotion) {
+    pending = null;
+    if (bot.getEmotion() === emotion) return;
+    bot.setEmotion(emotion);
+    lastChange = performance.now();
+    onChange?.(emotion);
+  }
+
+  return {
+    request(emotion) {
+      const elapsed = performance.now() - lastChange;
+      if (elapsed >= minHoldMs && !timer) return apply(emotion);
+      pending = emotion;                       // latest request wins after the hold
+      if (!timer) {
+        timer = setTimeout(() => { timer = null; if (pending) apply(pending); }, Math.max(0, minHoldMs - elapsed));
+      }
+    },
+    event(name) { this.request(EVENT_TO_EMOTION[name] ?? 'idle'); },
+    reset() { clearTimeout(timer); timer = null; pending = null; lastChange = 0; bot.setEmotion('idle'); },
+  };
+}
+
+return { EVENT_TO_EMOTION, LINES, lineFor, createEmotionController };
+})();
+
+
+
+
+
+  const EVENT_LABEL = {
+    idle: 'Student is building the maze', curious: 'Exploring toward the nearest unknown area',
+    thinking: 'Map finished, planner searching', excited: 'Princess-Bot enters the sensor range',
+    happy: 'Shortest path found', sad: 'No path exists',
+  };
+
+  const sheet = document.getElementById('sheet');
+  for (const e of EMOTIONS) {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `<div class="bot"></div><b>${e}</b><small>${EVENT_LABEL[e]}</small><q>${LINES[e][0]}</q>`;
+    sheet.appendChild(card);
+    const b = createDoodlebot(card.querySelector('.bot'), { emotion: e });
+    if (e === 'curious') b.lookAt(1, 0);
+  }
+
+  const big = createDoodlebot(document.getElementById('bigbot'));
+  const bubble = document.getElementById('bubble');
+  const emoBtns = document.getElementById('emo-btns');
+  for (const e of EMOTIONS) {
+    const btn = document.createElement('button');
+    btn.textContent = e;
+    btn.setAttribute('aria-pressed', e === 'idle');
+    btn.onclick = () => {
+      big.setEmotion(e);
+      bubble.textContent = lineFor(e);
+      emoBtns.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === btn));
+    };
+    emoBtns.appendChild(btn);
+  }
+  const dirs = { '←': [-1, 0], '↑': [0, -1], '→': [1, 0], '↓': [0, 1], '•': [0, 0] };
+  const lookBtns = document.getElementById('look-btns');
+  for (const [k, v] of Object.entries(dirs)) {
+    const btn = document.createElement('button');
+    btn.textContent = k;
+    btn.onclick = () => big.lookAt(...v);
+    lookBtns.appendChild(btn);
+  }
+  const talkBtn = document.getElementById('talk');
+  talkBtn.onclick = () => {
+    const on = talkBtn.getAttribute('aria-pressed') !== 'true';
+    talkBtn.setAttribute('aria-pressed', on);
+    big.setTalking(on);
+  };
+  // Mouth moves exactly while the browser's TTS is speaking
+  document.getElementById('say').onclick = () => {
+    if (!('speechSynthesis' in window)) { bubble.textContent = 'Speech is not supported in this browser.'; return; }
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(bubble.textContent);
+    u.pitch = 1.5; u.rate = 1.05;
+    u.onstart = () => big.setTalking(true);
+    u.onend = u.onerror = () => big.setTalking(false);
+    speechSynthesis.speak(u);
+  };
+
+  const pr = document.getElementById('princess');
+  for (const [mood, label] of [['lost', 'Lost (before she is found)'], ['rescued', 'Rescued (path found)']]) {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `<div class="bot"></div><b>${mood}</b><small>${label}</small>`;
+    pr.appendChild(card);
+    createPrincessBot(card.querySelector('.bot'), { mood });
+  }
+
+  // grid demo: tokens at real cell size, eyes facing their direction
+  const cv = document.getElementById('grid');
+  const dpr = window.devicePixelRatio || 1;
+  cv.style.width = cv.width + 'px'; cv.style.height = cv.height + 'px';
+  cv.width *= dpr; cv.height *= dpr;
+  const ctx = cv.getContext('2d'); ctx.scale(dpr, dpr);
+  const C = 44;
+  ctx.strokeStyle = '#E4E7F2';
+  for (let x = 0; x <= 10; x++) { ctx.beginPath(); ctx.moveTo(x * C + .5, 0); ctx.lineTo(x * C + .5, 132); ctx.stroke(); }
+  for (let y = 0; y <= 3; y++) { ctx.beginPath(); ctx.moveTo(0, y * C + .5); ctx.lineTo(440, y * C + .5); ctx.stroke(); }
+  const demo = [['idle', [0, 1]], ['curious', [1, 0]], ['curious', [-1, 0]], ['curious', [0, -1]], ['thinking', [1, -1]], ['excited', [0, 0]], ['happy', [0, 0]], ['sad', [0, 1]]];
+  demo.forEach(([emotion, dir], i) => drawDoodlebotToken(ctx, i * C + C / 2 + (i > 3 ? C : 0), C * 1.5, C, { emotion, dir }));
+  drawPrincessToken(ctx, 9 * C + C / 2, C * 1.5, C);
+
+  const tbody = document.querySelector('#events tbody');
+  for (const [ev, emo] of Object.entries(EVENT_TO_EMOTION)) tbody.insertAdjacentHTML('beforeend', `<tr><td>${ev}</td><td>${emo}</td></tr>`);
+</script>
+</body>
+</html>

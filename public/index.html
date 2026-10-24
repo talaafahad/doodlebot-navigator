@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Doodlebot – The Lost Kingdom</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@500;600;700;800&display=swap">
+<link rel="stylesheet" href="characters/doodlebot.css">
+<link rel="stylesheet" href="characters/princess.css">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body data-stage="build" data-screen="welcome">
+
+<!-- ======================= WELCOME ======================= -->
+<section class="screen welcome" id="welcome-screen" aria-labelledby="welcome-title">
+  <div class="welcome-inner">
+    <div class="welcome-copy">
+      <h1 id="welcome-title">Doodlebot <span>– The Lost Kingdom</span></h1>
+      <p>Princess-Bot is lost in a mysterious maze! Help Doodlebot explore, discover hidden paths, and rescue his friend!</p>
+      <button class="btn primary hero-btn" id="start-adventure">Start Adventure!</button>
+      <div class="welcome-links">
+        <button class="link-btn" id="watch-tutorial" hidden>🎓 How Doodlebot thinks</button>
+        <button class="link-btn" id="skip-intro">Skip the intro →</button>
+      </div>
+    </div>
+    <div class="welcome-doodlebot" id="welcome-bot" aria-hidden="true"></div>
+    <div class="welcome-princess" id="welcome-princess" aria-hidden="true"></div>
+  </div>
+</section>
+
+<!-- ======================= TUTORIAL ======================= -->
+<section class="screen tutorial" id="tutorial-screen" aria-labelledby="tut-heading">
+  <div class="tut-card">
+    <header class="tut-head">
+      <div>
+        <h1 id="tut-heading">How Doodlebot Thinks</h1>
+        <ol class="tut-steps" id="tut-steps" aria-label="Tutorial steps">
+          <li><span>1</span>Look</li><li><span>2</span>Explore</li><li><span>3</span>Plan</li><li><span>4</span>Rescue</li>
+        </ol>
+      </div>
+      <button class="btn soft" id="tut-skip">Skip for now</button>
+    </header>
+    <div class="tut-body">
+      <figure class="tut-map">
+        <canvas id="tut-canvas" aria-label="Doodlebot's map in a small practice maze"></canvas>
+        <figcaption>🤖 Doodlebot's map <span>· a practice maze</span></figcaption>
+      </figure>
+      <div class="tut-side">
+        <p class="tut-kicker" id="tut-kicker">Step 1 of 4</p>
+        <h2 id="tut-title">Look Around!</h2>
+        <div class="tut-say" id="tut-say" aria-live="polite"></div>
+        <div class="tut-chars">
+          <div class="tut-bot" id="tut-bot"></div>
+          <div class="tut-princess" id="tut-princess"></div>
+        </div>
+        <ol class="tut-log" id="tut-log" aria-live="polite" aria-label="What Doodlebot told you in this step"></ol>
+        <button class="btn soft wide" id="tut-blocked" hidden>🧱 What if the path is blocked?</button>
+      </div>
+    </div>
+    <footer class="tut-nav">
+      <button class="btn soft" id="tut-back">← Back</button>
+      <button class="btn soft" id="tut-replay">↻ Replay animation</button>
+      <button class="btn primary" id="tut-next">Next →</button>
+      <button class="btn primary" id="tut-play" hidden>Let's Play! ▶</button>
+    </footer>
+  </div>
+</section>
+
+<!-- ======================= GAME ======================= -->
+<div class="screen game" id="game-screen">
+<a class="skip" href="#maze-card">Skip to the maze</a>
+
+<header class="topbar">
+  <div class="brand">
+    <h1>Doodlebot <span>– The Lost Kingdom</span></h1>
+    <p>Help Doodlebot explore the maze and find Princess-Bot!</p>
+  </div>
+  <ol class="stepper" aria-label="Mission stages">
+    <li data-step="build"><span class="dot">1</span>Build</li>
+    <li data-step="explore"><span class="dot">2</span>Explore</li>
+    <li data-step="results"><span class="dot">3</span>Results</li>
+  </ol>
+  <div class="top-actions">
+    <button class="btn soft home-btn" id="home-btn" aria-label="Home: back to the welcome page">🏠 Home</button>
+    <button class="icon-btn help-btn" id="help-open" aria-label="How to play">?</button>
+  </div>
+</header>
+
+<main class="layout">
+  <!-- ============ side menus ============ -->
+  <nav class="sidebar" aria-label="Game menus">
+
+    <section class="acc" id="acc-build">
+      <h2><button class="acc-head" aria-expanded="true" aria-controls="acc-build-body">
+        <span class="acc-icon" aria-hidden="true">🧱</span>Build Tools<span class="chev" aria-hidden="true"></span>
+      </button></h2>
+      <div class="acc-body" id="acc-build-body">
+        <div class="tool-grid" id="tools" role="radiogroup" aria-label="Drawing tool">
+          <button class="tool" role="radio" data-tool="wall" aria-checked="true"><canvas class="tool-icon" data-icon="wall"></canvas><span>Wall</span></button>
+          <button class="tool" role="radio" data-tool="obstacle" aria-checked="false"><canvas class="tool-icon" data-icon="obstacle"></canvas><span>Obstacle</span></button>
+          <button class="tool" role="radio" data-tool="start" aria-checked="false"><canvas class="tool-icon" data-icon="start"></canvas><span>Doodlebot</span></button>
+          <button class="tool" role="radio" data-tool="princess" aria-checked="false"><canvas class="tool-icon" data-icon="princess"></canvas><span>Princess-Bot</span></button>
+          <button class="tool" role="radio" data-tool="eraser" aria-checked="false"><canvas class="tool-icon" data-icon="eraser"></canvas><span>Eraser</span></button>
+        </div>
+        <p class="helper">Walls and obstacles both block Doodlebot. Hold and drag to draw lots at once.</p>
+        <label class="label" for="preset">Ready-made mazes</label>
+        <select id="preset">
+          <option value="">Choose a maze…</option>
+          <option value="lesson">Lesson maze</option>
+          <option value="walledIn">Princess walled in</option>
+          <option value="enclosedStart">Doodlebot boxed in</option>
+          <option value="empty">Empty field</option>
+        </select>
+        <div class="btn-row">
+          <button id="random" class="btn soft" title="A random maze that always has a way through">🎲 Random maze</button>
+          <button id="clear" class="btn soft">🧽 Clear</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="acc" id="acc-settings">
+      <h2><button class="acc-head" aria-expanded="false" aria-controls="acc-settings-body">
+        <span class="acc-icon" aria-hidden="true">🔦</span>Mission Settings<span class="chev" aria-hidden="true"></span>
+      </button></h2>
+      <div class="acc-body" id="acc-settings-body" hidden>
+        <p class="label" id="range-label">How far can Doodlebot sense?</p>
+        <div class="range-wrap">
+          <div class="seg seg-5" id="range" role="radiogroup" aria-labelledby="range-label">
+            <button role="radio" data-value="1" aria-checked="false">1</button>
+            <button role="radio" data-value="2" aria-checked="true">2</button>
+            <button role="radio" data-value="3" aria-checked="false">3</button>
+            <button role="radio" data-value="4" aria-checked="false">4</button>
+            <button role="radio" data-value="5" aria-checked="false">5</button>
+          </div>
+          <canvas id="range-preview" class="range-preview" aria-hidden="true"></canvas>
+        </div>
+        <p class="helper" id="range-text">Doodlebot senses everything 2 cells around it.</p>
+
+        <p class="label" id="speed-label">How fast should Doodlebot move?</p>
+        <div class="seg seg-3" id="speed" role="radiogroup" aria-labelledby="speed-label">
+          <button role="radio" data-value="slow" aria-checked="false">🐢 Slow</button>
+          <button role="radio" data-value="normal" aria-checked="true">Normal</button>
+          <button role="radio" data-value="fast" aria-checked="false">🐇 Fast</button>
+        </div>
+
+        <details class="more">
+          <summary>Try another path-finding algorithm</summary>
+          <div class="seg seg-2" id="planner" role="radiogroup" aria-label="Path-finding algorithm">
+            <button role="radio" data-value="bfs" aria-checked="true">BFS<small>ripples</small></button>
+            <button role="radio" data-value="astar" aria-checked="false">A*<small>smart guess</small></button>
+          </div>
+          <p class="helper">Both always find a shortest path. Compare how many cells each one searches!</p>
+        </details>
+      </div>
+    </section>
+
+    <section class="acc" id="acc-results">
+      <h2><button class="acc-head" aria-expanded="false" aria-controls="acc-results-body">
+        <span class="acc-icon" aria-hidden="true">🧪</span>My Experiments<span class="count" id="run-count" hidden></span><span class="chev" aria-hidden="true"></span>
+      </button></h2>
+      <div class="acc-body" id="acc-results-body" hidden>
+        <div id="exp-cards" class="exp-cards"></div>
+        <div class="exp-question" id="exp-question" hidden>
+          <b>What changed?</b>
+          <p>Which run needed fewer steps to finish mapping? Was the path length different? What made the difference?</p>
+        </div>
+        <details class="more" id="exp-details" hidden>
+          <summary>Show all the numbers</summary>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Run</th><th>Maze</th><th>Sensor</th><th>Algorithm</th><th>Steps to finish mapping</th><th>Sensed her at step</th><th>Path length</th><th>Cells searched</th><th>Result</th></tr></thead>
+              <tbody id="results"></tbody>
+            </table>
+          </div>
+          <button id="clear-results" class="btn soft small">Clear all experiments</button>
+        </details>
+      </div>
+    </section>
+  </nav>
+
+  <!-- ============ the maze ============ -->
+  <section class="card maze-card" id="maze-card" aria-label="Maze">
+    <div class="tip" id="status" role="status"><span class="tip-icon" aria-hidden="true">💡</span><span id="status-text">Pick a tool, then click or drag on the maze.</span></div>
+
+    <div class="view-bar">
+      <div class="seg view-seg" id="view" role="tablist" aria-label="Which map to show">
+        <button role="tab" data-view="true" aria-selected="true">🌍 Real world</button>
+        <button role="tab" data-view="robot" aria-selected="false">🤖 Doodlebot's map</button>
+        <button role="tab" data-view="both" aria-selected="false">Both</button>
+      </div>
+      <span class="maze-id" title="Same ID means the same maze, so your experiment is fair.">Maze <b id="maze-id">—</b></span>
+    </div>
+
+    <div class="map-stage" id="map-stage" data-view="true">
+      <figure class="map map-true">
+        <figcaption>🌍 The real world <span>what you built</span></figcaption>
+        <canvas id="true-map" aria-label="The real world: the maze you built"></canvas>
+      </figure>
+      <figure class="map map-robot">
+        <figcaption>🤖 Doodlebot's map <span>black = not sensed yet</span></figcaption>
+        <canvas id="robot-map" aria-label="Doodlebot's map: black cells are not sensed yet"></canvas>
+      </figure>
+    </div>
+
+    <details class="legend">
+      <summary>What do the colours mean?</summary>
+      <ul>
+        <li><i class="lg lg-unknown"></i>Black: Doodlebot hasn't sensed it yet</li>
+        <li><i class="lg lg-sensor"></i>Dashed circle: what Doodlebot can sense</li>
+        <li><i class="lg lg-target"></i>Orange ring: the nearest unknown area</li>
+        <li><i class="lg lg-trail"></i>Dotted line: where Doodlebot has driven</li>
+        <li><i class="lg lg-search"></i>Yellow: cells checked while finding the path</li>
+        <li><i class="lg lg-path"></i>Green line: the shortest path</li>
+      </ul>
+    </details>
+  </section>
+
+  <!-- ============ mission column ============ -->
+  <section class="mission" aria-label="Mission controls">
+    <button id="run" class="btn primary big">▶ Start Exploring</button>
+    <div class="btn-row">
+      <button id="step" class="btn soft">👣 One step</button>
+      <button id="reset" class="btn soft">↺ Start over</button>
+    </div>
+
+    <div class="live" id="live">
+      <div class="metric metric-steps">
+        <span class="m-icon" aria-hidden="true">👣</span>
+        <span class="m-label">Steps to finish mapping</span>
+        <span class="m-value" id="m-steps">0</span>
+      </div>
+      <div class="metric metric-cells">
+        <span class="m-icon" aria-hidden="true">🗺️</span>
+        <span class="m-label">Cells discovered</span>
+        <span class="m-value" id="m-cells">0<small>/144</small></span>
+      </div>
+    </div>
+
+    <div class="card result-card" id="result-card" hidden>
+      <div class="result-head">
+        <div class="result-princess" id="princess-portrait"></div>
+        <div>
+          <h2 id="result-title">Rescued!</h2>
+          <p id="result-sub">Princess-Bot is safe.</p>
+        </div>
+      </div>
+      <dl class="result-stats">
+        <div><dt>Sensor range</dt><dd id="r-range">–</dd></div>
+        <div><dt>Steps to finish mapping</dt><dd id="r-steps">–</dd></div>
+        <div><dt>Shortest path length</dt><dd id="r-path">–</dd></div>
+        <div><dt>Cells searched for the path</dt><dd id="r-searched">–</dd></div>
+        <div><dt>Sensed Princess-Bot at step</dt><dd id="r-seen">–</dd></div>
+      </dl>
+      <p class="compare" id="r-compare" hidden></p>
+      <button class="btn soft wide" id="try-again">🔦 Try a different sensor range</button>
+    </div>
+    <!-- ============ floating Doodlebot ============ -->
+    <div class="buddy" id="buddy">
+      <div class="bubble" id="bubble">Build me a maze! I'm ready to explore.</div>
+      <button class="buddy-btn" id="bot-button" aria-label="Chat with Doodlebot">
+        <div id="bot-portrait"></div>
+        <span class="buddy-hint">💬 Talk to me!</span>
+      </button>
+    </div>
+  </section>
+</main>
+</div><!-- /game-screen -->
+
+<!-- ============ chat ============ -->
+<div class="chat" id="chat" role="dialog" aria-label="Chat with Doodlebot" hidden>
+  <div class="chat-head">
+    <div class="chat-avatar" id="chat-avatar"></div>
+    <div class="chat-title"><b>Doodlebot</b><span id="chat-mode">Ask me about sensing, maps and paths!</span></div>
+    <button class="icon-btn sound-btn" id="sound" aria-pressed="true" aria-label="Doodlebot's voice is on">🔊</button>
+    <button class="icon-btn" id="chat-close" aria-label="Close chat">✕</button>
+  </div>
+  <div class="chat-log" id="chat-log" aria-live="polite"></div>
+  <div class="chips" id="chips" aria-label="Question ideas">
+    <button class="chip">What can you see?</button>
+    <button class="chip">Why did you go that way?</button>
+    <button class="chip">What is a sensor?</button>
+  </div>
+  <form class="chat-form" id="chat-form">
+    <button type="button" class="mic" id="mic" aria-label="Talk to Doodlebot with your voice">🎤</button>
+    <input id="chat-input" autocomplete="off" placeholder="Type, or press 🎤 and talk" aria-label="Message to Doodlebot">
+    <button class="send" aria-label="Send message">➤</button>
+  </form>
+</div>
+
+<!-- ============ help ============ -->
+<dialog class="help" id="help">
+  <h2>How to play</h2>
+  <ol>
+    <li><b>Build</b> a maze: pick a tool and click or drag on the grid. Place Doodlebot and Princess-Bot.</li>
+    <li><b>Explore:</b> press <b>Start Exploring</b>. Doodlebot can't see the maze! It senses the cells inside its circle and draws its own map.</li>
+    <li><b>Rescue:</b> when its map is finished, Doodlebot goes back to the start and finds the shortest path to Princess-Bot.</li>
+    <li><b>Experiment:</b> change <b>Mission Settings → How far can Doodlebot sense?</b> and run the same maze again. Compare in <b>My Experiments</b>.</li>
+  </ol>
+  <p>Click Doodlebot any time to ask it a question, by typing or with your voice.</p>
+  <form method="dialog"><button class="btn primary">Let's go!</button></form>
+</dialog>
+
+<div id="confetti" aria-hidden="true"></div>
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

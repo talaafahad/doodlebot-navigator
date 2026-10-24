@@ -1,0 +1,105 @@
+/* Doodlebot expressive states. The root .doodlebot carries data-emotion. */
+.doodlebot { --look-x: 0px; --look-y: 0px; display: block; width: 100%; line-height: 0; }
+.doodlebot .db-svg { width: 100%; height: auto; overflow: visible; }
+
+.doodlebot .db-bob,
+.doodlebot .db-head,
+.doodlebot .arm,
+.doodlebot .eye-wrap,
+.doodlebot .pupil,
+.doodlebot .talk-shape,
+.doodlebot .tear,
+.doodlebot .dots circle { transform-box: fill-box; }
+
+/* ---------- show only the active face + chest ---------- */
+.doodlebot .face,
+.doodlebot .chest { opacity: 0; transition: opacity .25s ease; }
+.doodlebot[data-emotion="idle"]     .face-idle,
+.doodlebot[data-emotion="curious"]  .face-curious,
+.doodlebot[data-emotion="thinking"] .face-thinking,
+.doodlebot[data-emotion="excited"]  .face-excited,
+.doodlebot[data-emotion="happy"]    .face-happy,
+.doodlebot[data-emotion="sad"]      .face-sad,
+.doodlebot[data-emotion="idle"]     .chest-idle,
+.doodlebot[data-emotion="curious"]  .chest-curious,
+.doodlebot[data-emotion="thinking"] .chest-thinking,
+.doodlebot[data-emotion="excited"]  .chest-excited,
+.doodlebot[data-emotion="happy"]    .chest-happy,
+.doodlebot[data-emotion="sad"]      .chest-sad { opacity: 1; }
+
+/* ---------- antenna light = second emotion signal ---------- */
+.doodlebot .db-light { fill: #7FF3F0; transition: fill .3s; }
+.doodlebot[data-emotion="thinking"] .db-light,
+.doodlebot[data-emotion="excited"]  .db-light { fill: #FFD54A; }
+.doodlebot[data-emotion="happy"]    .db-light { fill: #7CF29A; }
+.doodlebot[data-emotion="sad"]      .db-light { fill: #8A90A8; }
+.doodlebot[data-emotion="curious"]  .db-light,
+.doodlebot[data-emotion="thinking"] .db-light { animation: db-blink-light 0.9s steps(2) infinite; }
+
+/* ---------- eyes ---------- */
+.doodlebot .eye-wrap { transform-origin: center; animation: db-blink 4.6s infinite; }
+.doodlebot .pupil { transition: transform .35s ease; }
+.doodlebot[data-emotion="idle"] .pupil,
+.doodlebot[data-emotion="curious"] .pupil { transform: translate(var(--look-x), var(--look-y)); }
+.doodlebot[data-emotion="thinking"] .pupil { transform: translate(6px, -7px); }
+.doodlebot[data-emotion="sad"] .pupil { transform: translate(0, 4px); }
+
+/* ---------- arms (rotate around the shoulder) ---------- */
+/* origin = shoulder centre inside each arm's fill-box: y = 19 / (19 + 118) */
+.doodlebot .arm { transition: transform .45s cubic-bezier(.3,1.4,.5,1); }
+.doodlebot .arm-l, .doodlebot .arm-r { transform-origin: 50% 13.9%; }
+.doodlebot .arm-l { transform: rotate(22deg); }
+.doodlebot .arm-r { transform: rotate(-22deg); }
+.doodlebot[data-emotion="curious"]  .arm-r { transform: rotate(-78deg); }
+.doodlebot[data-emotion="thinking"] .arm-l { transform: rotate(-158deg); }
+.doodlebot[data-emotion="excited"]  .arm-l { animation: db-cheer-l .5s ease-in-out infinite alternate; }
+.doodlebot[data-emotion="excited"]  .arm-r { animation: db-cheer-r .5s ease-in-out infinite alternate; }
+.doodlebot[data-emotion="happy"]    .arm-l { animation: db-wave .45s ease-in-out infinite alternate; }
+.doodlebot[data-emotion="sad"]      .arm-l { transform: rotate(6deg); }
+.doodlebot[data-emotion="sad"]      .arm-r { transform: rotate(-6deg); }
+
+/* ---------- whole body + head motion ---------- */
+.doodlebot .db-head { transform-origin: 50% 100%; transition: transform .45s ease; }
+.doodlebot .db-bob { animation: db-hover 3s ease-in-out infinite; }
+.doodlebot[data-emotion="curious"]  .db-head { transform: rotate(-6deg); }
+.doodlebot[data-emotion="thinking"] .db-head { transform: rotate(5deg); }
+.doodlebot[data-emotion="sad"]      .db-head { transform: translateY(8px) rotate(-3deg); }
+.doodlebot[data-emotion="sad"]      .db-bob  { animation: db-sway 3.6s ease-in-out infinite; }
+.doodlebot[data-emotion="excited"]  .db-bob  { animation: db-jump .5s ease-out infinite alternate; }
+.doodlebot[data-emotion="happy"]    .db-bob  { animation: db-bounce .7s ease-in-out infinite alternate; }
+
+/* ---------- details ---------- */
+.doodlebot .tear { animation: db-tear 1.6s ease-in infinite; }
+.doodlebot .tear-2 { animation-delay: .8s; }
+.doodlebot .dots circle { animation: db-dot 1.2s ease-in-out infinite; transform-origin: center; }
+.doodlebot .dots circle:nth-child(2) { animation-delay: .2s; }
+.doodlebot .dots circle:nth-child(3) { animation-delay: .4s; }
+
+/* ---------- talking: replaces the mouth while TTS speaks ---------- */
+.doodlebot .talk-mouth { opacity: 0; transition: opacity .15s; }
+.doodlebot.is-talking .talk-mouth { opacity: 1; }
+.doodlebot.is-talking .mouth { opacity: 0; }
+.doodlebot.is-talking .talk-shape { transform-origin: center; animation: db-talk .18s ease-in-out infinite alternate; }
+
+@keyframes db-blink { 0%, 93%, 100% { transform: scaleY(1); } 96% { transform: scaleY(.1); } }
+@keyframes db-blink-light { 50% { fill: #E9ECF6; } }
+@keyframes db-hover { 50% { transform: translateY(-6px); } }
+@keyframes db-sway { 0%, 100% { transform: translateY(4px) rotate(-1.5deg); } 50% { transform: translateY(4px) rotate(1.5deg); } }
+@keyframes db-jump { from { transform: translateY(0); } to { transform: translateY(-22px); } }
+@keyframes db-bounce { from { transform: translateY(0); } to { transform: translateY(-10px); } }
+@keyframes db-wave { from { transform: rotate(140deg); } to { transform: rotate(165deg); } }
+@keyframes db-cheer-l { from { transform: rotate(135deg); } to { transform: rotate(155deg); } }
+@keyframes db-cheer-r { from { transform: rotate(-135deg); } to { transform: rotate(-155deg); } }
+@keyframes db-tear { 0% { transform: translateY(0); opacity: 0; } 15% { opacity: 1; } 100% { transform: translateY(26px); opacity: 0; } }
+@keyframes db-dot { 0%, 100% { transform: translateY(0); opacity: .45; } 40% { transform: translateY(-7px); opacity: 1; } }
+@keyframes db-talk { from { transform: scaleY(.3); } to { transform: scaleY(1); } }
+
+/* Freeze for still exports, and respect reduced-motion users */
+.doodlebot.is-static *, .doodlebot.is-static { animation: none !important; transition: none !important; }
+.doodlebot.is-static .tear { opacity: 1; transform: translateY(6px); }
+.doodlebot.is-static[data-emotion="happy"] .arm-l { transform: rotate(152deg); }
+.doodlebot.is-static[data-emotion="excited"] .arm-l { transform: rotate(145deg); }
+.doodlebot.is-static[data-emotion="excited"] .arm-r { transform: rotate(-145deg); }
+@media (prefers-reduced-motion: reduce) {
+  .doodlebot * { animation-duration: 0s !important; animation-iteration-count: 1 !important; }
+}

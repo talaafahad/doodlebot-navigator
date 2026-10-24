@@ -1,0 +1,14 @@
+{
+  "name": "doodlebot-navigator",
+  "version": "1.0.0",
+  "description": "Doodlebot Autonomous Navigation — an educational game where a social robot explores an unknown maze, maps it and plans a path to rescue Princess-Bot.",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test test/*.test.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
